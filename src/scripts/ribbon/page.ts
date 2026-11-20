@@ -374,11 +374,13 @@ export function initPageRibbon(host: HTMLElement) {
   });
 
   let timer = 0, lastMainH = 0, lastW = 0;
+  // The first plan goes at once (the page loader waits for it); later ones
+  // wait for the resizing or loading to settle.
   const relayout = () => {
     clearTimeout(timer);
     timer = window.setTimeout(() => {
       layout().then(run);
-    }, 160);
+    }, line ? 160 : 0);
   };
   new ResizeObserver(() => {
     const h = main.offsetHeight, w = host.clientWidth;

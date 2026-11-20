@@ -6,6 +6,7 @@ import '../styles/paper.css';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import PageRibbon from '../components/PageRibbon.astro';
+import Loader from '../components/Loader.astro';
 import { getCollection } from 'astro:content';
 
 interface Props {
@@ -69,6 +70,7 @@ const ogImage = Astro.props.ogImage ?? `${base}og/${routeSlug}.png`;
     <meta name="twitter:image" content={ogImage} />
   </head>
   <body>
+    <Loader />
     <PageRibbon />
     <Header />
     <main>
@@ -99,9 +101,17 @@ const ogImage = Astro.props.ogImage ?? `${base}og/${routeSlug}.png`;
       // if anything ever goes wrong. Never leave text stuck hidden.
       const showAll = () => document.documentElement.classList.add('reveals-off');
 
+      // The loader's sheet (Loader.astro) covers the page until it is ready;
+      // reveals start when it lifts, so the first screen's entrance is seen.
+      const whenUncovered = (go: () => void) => {
+        if (document.documentElement.classList.contains('is-loading')) {
+          document.addEventListener('acc:ready', go, { once: true });
+        } else go();
+      };
+
       if (reduced || !('IntersectionObserver' in window) || !targets.length) {
         showAll();
-      } else {
+      } else whenUncovered(() => {
         let fired = false;
         const io = new IntersectionObserver(
           (entries) => {
@@ -129,7 +139,7 @@ const ogImage = Astro.props.ogImage ?? `${base}og/${routeSlug}.png`;
         wakeVisible();
         // Only if the observer never reports at all.
         setTimeout(() => fired || showAll(), 3000);
-      }
+      });
 
       // Smooth inertia scroll — off on reduced-motion and on touch, where the
       // OS momentum already does the job and Lenis fights it. Bundled locally

@@ -1,0 +1,244 @@
+---
+/*
+  The page loader: a sheet of the site's paper over everything while the page
+  gets its things together, so nothing arrives in pieces (fonts swapping,
+  photos popping in, the ribbon appearing after the content).
+
+  It waits for real things only, never a timer for show:
+    - the fonts,
+    - the page's own files (the window's load event),
+    - the photos on screen, loaded and decoded,
+    - the page ribbon's first plan (src/scripts/ribbon/page.ts).
+  The coral thread sews along its stitch line as each one is done, so its
+  length is honest progress, not a fake percentage.
+
+  Fast loads (cached, most navigations) never see it: the mark only fades in
+  after 400ms, and a page ready before then simply fades in. A slow load
+  shows the dove and the thread (for at least half a second, so it never
+  flickers), then the sheet lifts away. It gives up
+  waiting after 3.5s whatever happens, and a CSS failsafe clears it at 6s if
+  the script never ran. No JavaScript: it is never shown. Reduced motion: it
+  goes at once, nothing moves.
+
+  When it lifts it says so (html loses .is-loading, an acc:ready event), and
+  the scroll reveals in BaseLayout start then, so the first screen's
+  entrance plays as the page is uncovered instead of behind the sheet.
+*/
+// The ACC dove, as a 4KB mask written into the page itself, so the mark can
+// show on a slow first visit before any image has arrived.
+import dove from '../assets/brand/acc-dove-mask.webp?inline';
+---
+
+<div class="loader" id="loader" aria-hidden="true">
+  <div class="loader__mark">
+    <span class="loader__logo" style={`--logo:url("${dove}")`}></span>
+    <span class="loader__stitch"><span class="loader__thread"></span></span>
+  </div>
+</div>
+
+<script is:inline>
+  (function () {
+    var root = document.documentElement;
+    var el = document.getElementById('loader');
+    if (!el) return;
+    root.classList.add('is-loading');
+    var t0 = performance.now();
+    var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var SHOW = 400; // the mark fades in only after this (see the CSS delay)
+    var STAY = 500; // once it has shown, it stays this long, so it never just flickers
+    var MAX = 3500; // never wait longer than this
+    var thread = el.querySelector('.loader__thread');
+    var total = 0, done = 0, shown = 0, finished = false;
+
+    function progress() {
+      // never runs backwards when a newly found photo joins the count
+      var f = Math.min(1, done / Math.max(1, total));
+      if (f > shown) {
+        shown = f;
+        thread.style.transform = 'scaleX(' + f.toFixed(3) + ')';
+      }
+    }
+    function track(p) {
+      total++;
+      return Promise.resolve(p)
+        .catch(function () {})
+        .then(function () {
+          done++;
+          progress();
+        });
+    }
+    function finish() {
+      if (finished) return;
+      finished = true;
+      var elapsed = performance.now() - t0;
+      var quick = reduced || elapsed < SHOW;
+      thread.style.transform = 'scaleX(1)';
+      if (quick) lift(true);
+      else setTimeout(lift, Math.max(0, SHOW + STAY - elapsed));
+    }
+    function lift(quick) {
+      root.classList.remove('is-loading');
+      el.classList.add(quick ? 'is-quick' : 'is-lifting');
+      document.dispatchEvent(new CustomEvent('acc:ready'));
+      setTimeout(function () {
+        el.remove();
+      }, quick ? 300 : 1000);
+    }
+
+    var waits = [];
+    if (document.fonts && document.fonts.ready) waits.push(track(document.fonts.ready));
+    waits.push(
+      track(
+        new Promise(function (r) {
+          if (document.readyState === 'complete') r();
+          else window.addEventListener('load', r, { once: true });
+        })
+      )
+    );
+    // the ribbon announces its first plan; listen now, before it can happen
+    waits.push(
+      track(
+        new Promise(function (r) {
+          document.addEventListener('acc:ribbon-end', r, { once: true });
+        })
+      )
+    );
+
+    function photos() {
+      var vh = window.innerHeight;
+      var imgs = document.querySelectorAll('main img, header img');
+      for (var i = 0; i < imgs.length; i++) {
+        var img = imgs[i];
+        if (!img.getClientRects().length) continue; // not shown (display: none)
+        var r = img.getBoundingClientRect();
+        if (r.bottom <= 0 || r.top >= vh || r.width < 2) continue;
+        waits.push(
+          track(
+            new Promise(function (res) {
+              if (img.complete) res();
+              else {
+                img.addEventListener('load', res, { once: true });
+                img.addEventListener('error', res, { once: true });
+              }
+            }).then(
+              (function (im) {
+                return function () {
+                  return im.decode ? im.decode() : null;
+                };
+              })(img)
+            )
+          )
+        );
+      }
+      Promise.all(waits).then(finish);
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', photos, { once: true });
+    else photos();
+    setTimeout(finish, MAX);
+    // back/forward cache: a restored page is ready as it stands
+    window.addEventListener('pageshow', function (e) {
+      if (e.persisted) finish();
+    });
+  })();
+</script>
+
+<style>
+  .loader {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: grid;
+    place-items: center;
+    background: var(--bg);
+    /* the sheet's cut edge, seen as it lifts */
+    box-shadow:
+      0 5px 0 rgba(2, 22, 24, 0.1),
+      0 22px 44px -12px rgba(2, 22, 24, 0.22);
+    /* failsafe: if the script never ran, it clears itself */
+    animation: loader-failsafe 0.3s linear 6s forwards;
+  }
+  :global(html.no-js) .loader {
+    display: none;
+  }
+
+  .loader__mark {
+    display: grid;
+    justify-items: center;
+    gap: var(--space-5);
+    opacity: 0;
+    transform: translateY(6px);
+    animation: loader-mark-in 0.45s var(--ease-soft) 0.4s forwards;
+  }
+  /* the ACC dove, masked so it takes the teal (as the header's wordmark does) */
+  .loader__logo {
+    display: block;
+    width: 4.75rem;
+    aspect-ratio: 222 / 138;
+    background: var(--teal);
+    -webkit-mask: var(--logo) center / contain no-repeat;
+    mask: var(--logo) center / contain no-repeat;
+  }
+  /* a stitch line, and the coral thread sewn along it as things arrive */
+  .loader__stitch {
+    position: relative;
+    display: block;
+    width: 7rem;
+    height: 3px;
+    background: repeating-linear-gradient(90deg, var(--hair) 0 6px, transparent 6px 11px);
+    border-radius: 999px;
+  }
+  .loader__thread {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: var(--coral);
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition: transform 0.45s var(--ease-soft);
+  }
+
+  /* ready quickly: the page just fades in */
+  .loader.is-quick {
+    animation: none;
+    opacity: 0;
+    transition: opacity 0.24s var(--ease-quick);
+    pointer-events: none;
+  }
+  .loader.is-quick .loader__mark {
+    animation: none;
+  }
+  /* ready after a wait: the thread finishes, then the sheet lifts away */
+  .loader.is-lifting {
+    animation: none;
+    transform: translateY(calc(-100% - 60px));
+    transition: transform 0.75s cubic-bezier(0.7, 0, 0.2, 1) 0.18s;
+    pointer-events: none;
+  }
+  .loader.is-lifting .loader__mark {
+    opacity: 1;
+    transform: none;
+    animation: none;
+  }
+
+  @keyframes loader-mark-in {
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  @keyframes loader-failsafe {
+    to {
+      opacity: 0;
+      visibility: hidden;
+    }
+  }
+
+  /* reduced motion: the global rule in base.css makes every animation and
+     transition instant but keeps their delays, so the mark still only
+     appears on a slow load, and the sheet goes at once */
+  @media (prefers-reduced-motion: reduce) {
+    .loader__thread {
+      transition: none;
+    }
+  }
+</style>

@@ -1352,3 +1352,26 @@ log, a conflict, settings that don't count as changes until typed in, a new even
 photo dialog, then every public page picking the changes up; and against the real Sheet once ACC had run the setup. No page
 overflows at 390 or 1440.
 
+
+## The page loader
+
+Deployed, pages used to arrive in pieces: fonts swapping, photos popping in, the ribbon
+appearing after the text, reveals starting while photos were still decoding. Every page
+now opens under a sheet of the site's paper (`src/components/Loader.astro`) that waits for
+real things only: the fonts, the window's load event, the photos on the first screen
+(loaded and decoded) and the ribbon's first plan. A coral thread sews along a dashed
+stitch line as each one is done, so its length is honest progress.
+
+- **Fast loads never see it.** The dove and thread fade in only after 400ms; a page
+  ready before then simply fades in (cached page changes measured 150 to 320ms on the
+  production build). Once the mark has shown it stays at least 500ms, so it never
+  flickers, then the sheet lifts away with a soft cut edge.
+- **Never stuck.** It stops waiting at 3.5s whatever happens; a CSS animation clears it
+  at 6s if the script never ran; without JavaScript it is never shown; a page restored
+  from the back/forward cache is uncovered at once. Reduced motion: it goes instantly.
+- **The reveals wait for it** (BaseLayout listens for `acc:ready`), so the first screen's
+  entrance plays as the page is uncovered rather than behind the sheet.
+- The dove is a 4KB alpha mask (`src/assets/brand/acc-dove-mask.webp`) written into each
+  page as a data URL, so the mark can show before any image has arrived.
+- The ribbon now makes its first plan at once instead of after a 160ms settle, since the
+  loader waits for it.
