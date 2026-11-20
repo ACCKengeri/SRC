@@ -1,0 +1,32 @@
+[
+  {
+    "id": "kengeri",
+    "name": "Kengeri",
+    "instagram": "https://www.instagram.com/acc_kengeri/",
+    "primary": true
+  },
+  {
+    "id": "central",
+    "name": "Central",
+    "instagram": "https://www.instagram.com/acc_christ/",
+    "primary": false
+  },
+  {
+    "id": "bannerghatta",
+    "name": "Bannerghatta",
+    "instagram": "https://www.instagram.com/acc_bgr/",
+    "primary": false
+  },
+  {
+    "id": "yeshwanthpur",
+    "name": "Yeshwanthpur",
+    "instagram": "https://www.instagram.com/acc_byc/",
+    "primary": false
+  },
+  {
+    "id": "delhi-ncr",
+    "name": "Delhi NCR",
+    "instagram": "https://www.instagram.com/acc_christ_ncr/",
+    "primary": false
+  }
+]

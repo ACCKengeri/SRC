@@ -1,0 +1,533 @@
+[
+  {
+    "id": "fr-shijin",
+    "name": "Fr. Shijin PJ CMI",
+    "role": "Coordinator",
+    "tier": "coordinators",
+    "imageSource": "team/fr-shijin.jpg",
+    "links": [],
+    "domains": [],
+    "photoId": "1AMy-rnuZbi85IdFRXitkMjhlKAnHnVxJ"
+  },
+  {
+    "id": "jerin-geo-jacob",
+    "name": "Jerin Geo Jacob",
+    "role": "Faculty Coordinator",
+    "tier": "coordinators",
+    "imageSource": "team/jerin-geo-jacob.jpg",
+    "links": [],
+    "domains": [],
+    "photoId": "1YqxdpaB3YLTTFEWuRDGuHyjC6qOF54Rw"
+  },
+  {
+    "id": "jincy-cherian",
+    "name": "Jincy Cherian",
+    "role": "Faculty Coordinator",
+    "tier": "coordinators",
+    "imageSource": "team/jincy-cherian.jpg",
+    "links": [],
+    "domains": [],
+    "photoId": "16SFF4if2Fbq3Gy0O9mxS1xK2DslVELnh"
+  },
+  {
+    "id": "abraham-aiden-joseph",
+    "name": "Abraham Aiden Joseph",
+    "role": "Student Coordinator",
+    "tier": "student_coordinators",
+    "imageSource": "team/abraham-aiden-joseph.jpg",
+    "links": [],
+    "domains": [],
+    "photoId": "1UO-y9awQSjK8dBMoLKFJRKgJnj-8MV8d"
+  },
+  {
+    "id": "kripa-maria-jestin",
+    "name": "Kripa Maria Jestin",
+    "role": "Student Coordinator",
+    "tier": "student_coordinators",
+    "imageSource": "team/kripa-maria-jestin.jpg",
+    "links": [],
+    "domains": [],
+    "photoId": "1sX4Bt7mR0OLGBZhly_gU8GaTXIsEHwEQ"
+  },
+  {
+    "id": "shohil",
+    "name": "Shohil",
+    "role": "Animators Head",
+    "tier": "domain_heads",
+    "imageSource": "team/shohil.jpg",
+    "links": [],
+    "domains": [
+      "animation"
+    ],
+    "group": "Animators",
+    "photoId": "16pRn5DK2JFjvwYUXMCFAxNltow71kA8g"
+  },
+  {
+    "id": "atlin-chacko",
+    "name": "Atlin Chacko",
+    "role": "Animators Head",
+    "tier": "domain_heads",
+    "imageSource": "team/atlin-chacko.jpg",
+    "links": [],
+    "domains": [
+      "animation"
+    ],
+    "group": "Animators",
+    "photoId": "13kqfjHMCT9GJEDbOz_C4TDqAaEOqQgq3"
+  },
+  {
+    "id": "jis-mariya",
+    "name": "Jis Mariya",
+    "role": "Documentation Head",
+    "tier": "domain_heads",
+    "imageSource": "team/jis-mariya.jpg",
+    "links": [],
+    "domains": [],
+    "group": "Documentation",
+    "photoId": "1krWO01V3McF1c-7ohlRC46tUAypJZFt_"
+  },
+  {
+    "id": "cerine-roy-thomas",
+    "name": "Cerine Roy Thomas",
+    "role": "Documentation Head",
+    "tier": "domain_heads",
+    "imageSource": "team/cerine-roy-thomas.jpg",
+    "links": [],
+    "domains": [],
+    "group": "Documentation",
+    "photoId": "1M48TKNPiFDr8YjmPLgwndjTVrBzpgWyN"
+  },
+  {
+    "id": "albert-john-a",
+    "name": "Albert John A",
+    "role": "Finance Head",
+    "tier": "domain_heads",
+    "imageSource": "team/albert-john-a.jpg",
+    "links": [],
+    "domains": [],
+    "group": "Finance",
+    "photoId": "1Hz8DC4TsyzUjY9BXgtAL3zJSDQ6wx7FZ"
+  },
+  {
+    "id": "abel-vincent",
+    "name": "Abel Vincent",
+    "role": "Finance Head",
+    "tier": "domain_heads",
+    "imageSource": "team/abel-vincent.jpg",
+    "links": [],
+    "domains": [],
+    "group": "Finance",
+    "photoId": "16eSxbTLlmmiBmt7hMzd-rEGhcwRrPC4i"
+  },
+  {
+    "id": "abel-francis",
+    "name": "Abel Francis",
+    "role": "Logistics Head",
+    "tier": "domain_heads",
+    "imageSource": "team/abel-francis.jpg",
+    "links": [],
+    "domains": [
+      "logistics-hospitality"
+    ],
+    "group": "Logistics",
+    "photoId": "11J30pwyA-_PS80H7rAx2yJH8cNrUen43"
+  },
+  {
+    "id": "savio-soy",
+    "name": "Savio Soy",
+    "role": "Logistics Head",
+    "tier": "domain_heads",
+    "imageSource": "team/savio-soy.jpg",
+    "links": [],
+    "domains": [
+      "logistics-hospitality"
+    ],
+    "group": "Logistics",
+    "photoId": "1Fpx0iJz2YxhhNicULZRD_qmiUakyHfh-"
+  },
+  {
+    "id": "roshel-mariya-rijo",
+    "name": "Roshel Mariya Rijo",
+    "role": "Decor Head",
+    "tier": "domain_heads",
+    "imageSource": "team/roshel-mariya-rijo.jpg",
+    "links": [],
+    "domains": [],
+    "group": "Decor",
+    "photoId": "18D6kqbJB51j8FGpiddmCBYOnv5o6NnlS"
+  },
+  {
+    "id": "agnes-anna-roy",
+    "name": "Agnes Anna Roy",
+    "role": "Decor Head",
+    "tier": "domain_heads",
+    "imageSource": "team/agnes-anna-roy.jpg",
+    "links": [],
+    "domains": [],
+    "group": "Decor",
+    "photoId": "1jSxUoR1muTbj41shuXoxK2Tk5Goerwtt"
+  },
+  {
+    "id": "theresa-sony",
+    "name": "Theresa Sony",
+    "role": "Decor Head",
+    "tier": "domain_heads",
+    "imageSource": "team/theresa-sony.jpg",
+    "links": [],
+    "domains": [],
+    "group": "Decor",
+    "photoId": "1NN5O3fQviRqt3mbESzfoB_ZjEqipQ9EK"
+  },
+  {
+    "id": "kevin-samuel",
+    "name": "Kevin Samuel",
+    "role": "Outreach Head",
+    "tier": "domain_heads",
+    "imageSource": "team/kevin-samuel.jpg",
+    "links": [],
+    "domains": [
+      "outreach"
+    ],
+    "group": "Outreach",
+    "photoId": "1dTAkeLBjH4-LpHab5DupojkgifntoODR"
+  },
+  {
+    "id": "jonnet-shaji-john",
+    "name": "Jonnet Shaji John",
+    "role": "Outreach Head",
+    "tier": "domain_heads",
+    "imageSource": "team/jonnet-shaji-john.jpg",
+    "links": [],
+    "domains": [
+      "outreach"
+    ],
+    "group": "Outreach",
+    "photoId": "19vN7znz8jtoOQTxQImQOQ2OS5qovkbHF"
+  },
+  {
+    "id": "sani-sajayan",
+    "name": "Sani Sajayan",
+    "role": "Outreach Head",
+    "tier": "domain_heads",
+    "imageSource": "team/sani-sajayan.jpg",
+    "links": [],
+    "domains": [
+      "outreach"
+    ],
+    "group": "Outreach",
+    "photoId": "17KwsaAt934jJSrmg7E_dtsosiI8eSj7v"
+  },
+  {
+    "id": "joseph-john",
+    "name": "Joseph John",
+    "role": "Liturgy Head",
+    "tier": "domain_heads",
+    "imageSource": null,
+    "links": [],
+    "domains": [
+      "liturgy"
+    ],
+    "group": "Liturgy"
+  },
+  {
+    "id": "sreya-ann-binoy",
+    "name": "Sreya Ann Binoy",
+    "role": "Liturgy Head",
+    "tier": "domain_heads",
+    "imageSource": "team/sreya-ann-binoy.jpg",
+    "links": [],
+    "domains": [
+      "liturgy"
+    ],
+    "group": "Liturgy",
+    "photoId": "1FJTlYM0wsSLml4kJ8uwDhOPG0CcdRDh2"
+  },
+  {
+    "id": "abin-joseph",
+    "name": "Abin Joseph",
+    "role": "Liturgy Head",
+    "tier": "domain_heads",
+    "imageSource": "team/abin-joseph.jpg",
+    "links": [],
+    "domains": [
+      "liturgy"
+    ],
+    "group": "Liturgy",
+    "photoId": "10ImX03CTES5-gD6NO8IJau6VrpFZPIdn"
+  },
+  {
+    "id": "michelle-devasia",
+    "name": "Michelle Devasia",
+    "role": "Choir Head",
+    "tier": "domain_heads",
+    "imageSource": "team/michelle-devasia.jpg",
+    "links": [],
+    "domains": [
+      "audio-visual"
+    ],
+    "group": "Choir",
+    "photoId": "11yLTAywsA5G5s4VlV2q3mnBS90BFwHlr"
+  },
+  {
+    "id": "alex-baby",
+    "name": "Alex Baby",
+    "role": "Choir Head",
+    "tier": "domain_heads",
+    "imageSource": "team/alex-baby.jpg",
+    "links": [],
+    "domains": [
+      "audio-visual"
+    ],
+    "group": "Choir",
+    "photoId": "19zv6EyV1SRNPx76S_Rn1To4GOWv27TJ-"
+  },
+  {
+    "id": "tobit-siby",
+    "name": "Tobit Siby",
+    "role": "Choir Head",
+    "tier": "domain_heads",
+    "imageSource": "team/tobit-siby.jpg",
+    "links": [],
+    "domains": [
+      "audio-visual"
+    ],
+    "group": "Choir",
+    "photoId": "1RMeA5yC_CPttXwG-sG_MFRENyBcP6zXi"
+  },
+  {
+    "id": "ann-maria-aby",
+    "name": "Ann Maria Aby",
+    "role": "Dance Head",
+    "tier": "domain_heads",
+    "imageSource": "team/ann-maria-aby.jpg",
+    "links": [],
+    "domains": [
+      "audio-visual"
+    ],
+    "group": "Dance",
+    "photoId": "1l7SSZSafWVsZSXs-bjmGx_QEOQWaHZRe"
+  },
+  {
+    "id": "tisha-pinheiro",
+    "name": "Tisha Pinheiro",
+    "role": "Dance Head",
+    "tier": "domain_heads",
+    "imageSource": "team/tisha-pinheiro.jpg",
+    "links": [],
+    "domains": [
+      "audio-visual"
+    ],
+    "group": "Dance",
+    "photoId": "1_pGY-qh0AUWxacGnnSVNrlp3sh7bPZU1"
+  },
+  {
+    "id": "amvi-jerone",
+    "name": "Amvi Jerone",
+    "role": "Dance Head",
+    "tier": "domain_heads",
+    "imageSource": "team/amvi-jerone.jpg",
+    "links": [],
+    "domains": [
+      "audio-visual"
+    ],
+    "group": "Dance",
+    "photoId": "1NW_t6u8on4qYTqCC5HbJSSbEfHVsehfs"
+  },
+  {
+    "id": "diya-susan-binu",
+    "name": "Diya Susan Binu",
+    "role": "Theatre Head",
+    "tier": "domain_heads",
+    "imageSource": "team/diya-susan-binu.jpg",
+    "links": [],
+    "domains": [
+      "audio-visual"
+    ],
+    "group": "Theatre",
+    "photoId": "1nGMxgQUYhszFZHxL-JOEy0cZB8zmhXr1"
+  },
+  {
+    "id": "max-t-alenchery",
+    "name": "Max T Alenchery",
+    "role": "Theatre Head",
+    "tier": "domain_heads",
+    "imageSource": "team/max-t-alenchery.jpg",
+    "links": [],
+    "domains": [
+      "audio-visual"
+    ],
+    "group": "Theatre",
+    "photoId": "19QVdb85csL3GyF7x5o_Y63ksnOFyj8c-"
+  },
+  {
+    "id": "anson-toji",
+    "name": "Anson Toji",
+    "role": "Theatre Head",
+    "tier": "domain_heads",
+    "imageSource": "team/anson-toji.jpg",
+    "links": [],
+    "domains": [
+      "audio-visual"
+    ],
+    "group": "Theatre",
+    "photoId": "1wieA6Tsj3teMkZHE36uIHmQArLe0gUP4"
+  },
+  {
+    "id": "joseph-padayatty",
+    "name": "Joseph Padayatty",
+    "role": "Media Head",
+    "tier": "domain_heads",
+    "imageSource": "team/joseph-padayatty.jpg",
+    "links": [],
+    "domains": [
+      "media-communication"
+    ],
+    "group": "Media",
+    "photoId": "1nM666a6VGiShslIg5wenc_wvkuf2HMO2"
+  },
+  {
+    "id": "daine-cyriac-sinoj",
+    "name": "Daine Cyriac Sinoj",
+    "role": "Media Head",
+    "tier": "domain_heads",
+    "imageSource": "team/daine-cyriac-sinoj.jpg",
+    "links": [],
+    "domains": [
+      "media-communication"
+    ],
+    "group": "Media",
+    "photoId": "1V7X34Y277Wv3WeyK8U2d35zAg4E3k3oK"
+  },
+  {
+    "id": "george-sebastian",
+    "name": "George Sebastian",
+    "role": "Media Head",
+    "tier": "domain_heads",
+    "imageSource": "team/george-sebastian.jpg",
+    "links": [],
+    "domains": [
+      "media-communication"
+    ],
+    "group": "Media",
+    "photoId": "1AAF8Hxdmd3aUzGZm0ZOhIsH5q56giFKP"
+  },
+  {
+    "id": "melwin-thomas",
+    "name": "Melwin Thomas",
+    "role": "Engineering Head",
+    "tier": "department_heads",
+    "imageSource": "team/melwin-thomas.jpg",
+    "links": [],
+    "domains": [],
+    "group": "Engineering",
+    "photoId": "1MJpAwjuPXJSRo7zEDbwcNoN-OkuMUeAV"
+  },
+  {
+    "id": "femi-k-e",
+    "name": "Femi K E",
+    "role": "Engineering Head",
+    "tier": "department_heads",
+    "imageSource": "team/femi-k-e.jpg",
+    "links": [],
+    "domains": [],
+    "group": "Engineering",
+    "photoId": "1x7JS7ZIFzoKw0MTqbvOJi5-3EYc3q81g"
+  },
+  {
+    "id": "anisha-lissy",
+    "name": "Anisha Lissy",
+    "role": "Engineering Head",
+    "tier": "department_heads",
+    "imageSource": "team/anisha-lissy.jpg",
+    "links": [],
+    "domains": [],
+    "group": "Engineering",
+    "photoId": "1cI-u8AbtjqMRgJvm5E9qZGtW8vZQWLaE"
+  },
+  {
+    "id": "diya-wilson",
+    "name": "Diya Wilson",
+    "role": "Psychology Head",
+    "tier": "department_heads",
+    "imageSource": null,
+    "links": [],
+    "domains": [],
+    "group": "Psychology"
+  },
+  {
+    "id": "ashbah-merim-francis",
+    "name": "Ashbah Merim Francis",
+    "role": "Psychology Head",
+    "tier": "department_heads",
+    "imageSource": "team/ashbah-merim-francis.jpg",
+    "links": [],
+    "domains": [],
+    "group": "Psychology",
+    "photoId": "1Wa0iXaPLLaIjjtnsX4_gzXw33ij5NjHe"
+  },
+  {
+    "id": "aaron-giby",
+    "name": "Aaron Giby",
+    "role": "BBA Head",
+    "tier": "department_heads",
+    "imageSource": "team/aaron-giby.jpg",
+    "links": [],
+    "domains": [],
+    "group": "BBA",
+    "photoId": "1eATvW45Cxv8kBwAX3LpaqNKM_fpgfk2w"
+  },
+  {
+    "id": "joshua-jackson",
+    "name": "Joshua Jackson",
+    "role": "BBA Head",
+    "tier": "department_heads",
+    "imageSource": "team/joshua-jackson.jpg",
+    "links": [],
+    "domains": [],
+    "group": "BBA",
+    "photoId": "14q5-tnx5rgfWQQK4hdlZnMEPYRKZ6oVk"
+  },
+  {
+    "id": "bethal",
+    "name": "Bethal",
+    "role": "Architecture Head",
+    "tier": "department_heads",
+    "imageSource": "team/bethal.jpg",
+    "links": [],
+    "domains": [],
+    "group": "Architecture",
+    "photoId": "1xgyfG-Nc_ecwLmLgK92eFPbOIVuDkneF"
+  },
+  {
+    "id": "rebecca-joan-sebastian",
+    "name": "Rebecca Joan Sebastian",
+    "role": "Architecture Head",
+    "tier": "department_heads",
+    "imageSource": null,
+    "links": [],
+    "domains": [],
+    "group": "Architecture"
+  },
+  {
+    "id": "benison-johnson",
+    "name": "Benison Johnson",
+    "role": "MBA Head",
+    "tier": "department_heads",
+    "imageSource": "team/benison-johnson.jpg",
+    "links": [],
+    "domains": [],
+    "group": "MBA",
+    "photoId": "1Y9v51RaUIpcoySoOkykhklA0f2icaK_r"
+  },
+  {
+    "id": "agnas-saju",
+    "name": "Agnas Saju",
+    "role": "MBA Head",
+    "tier": "department_heads",
+    "imageSource": "team/agnas-saju.jpg",
+    "links": [],
+    "domains": [],
+    "group": "MBA",
+    "photoId": "1d40F_zPn_2NaFN4u9KG3WvTM6CqVe1Xm"
+  }
+]

@@ -1,0 +1,232 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300..800&family=Schibsted+Grotesk:wght@400..700&display=swap');
+    :root{--paper:#F6F4EF;--ink:#141210;--blue:#1E51F7;--blue-link:#1B3FC9;--blue-ink:#9DB2FF;--blue-wash:#E7ECFB;--magenta:#BB4198;--muted:#5C5A55;--hair:#D8D5CC}
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--paper);color:var(--ink);font-family:'Schibsted Grotesk',Arial,sans-serif;
+      font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased}
+    .disp{font-family:'Bricolage Grotesque',Arial,sans-serif;font-weight:600;line-height:1.0;letter-spacing:-0.025em;margin:0}
+    p{margin:0} a{color:inherit;text-decoration:none}
+    .wide{max-width:1240px;margin:0 auto;padding:0 72px}
+    .label{font-family:'Bricolage Grotesque',Arial,sans-serif;font-weight:500;font-size:14px;letter-spacing:0.03em;color:var(--muted);text-transform:lowercase}
+
+    .hdr{display:flex;align-items:center;justify-content:space-between;padding:26px 72px;border-bottom:1px solid var(--hair);
+      position:sticky;top:0;background:rgba(246,244,239,0.92);backdrop-filter:blur(8px);z-index:5}
+    .hdr b{font-family:'Bricolage Grotesque',Arial,sans-serif;font-weight:700;font-size:19px;display:flex;align-items:center;gap:12px}
+    .hdr .dot{width:22px;height:22px;border:2px solid currentColor;border-radius:50%}
+    .hdr nav{display:flex;gap:28px;font-size:15px;font-weight:500}
+    .hdr nav a.on{color:var(--blue-link)}
+    .hdr .soc{display:flex;gap:16px;font-size:14px;color:var(--muted)}
+    .hdr .soc a:hover{color:var(--blue-link)}
+
+    .head{padding:90px 72px 46px;max-width:1240px;margin:0 auto}
+    .head h1{font-size:96px;letter-spacing:-0.04em;line-height:0.94}
+    .head p{margin-top:20px;font-size:19px;color:#33302c;max-width:56ch}
+
+    .rhythm{background:var(--ink);color:var(--paper);padding:44px 72px}
+    .rhythm .in{max-width:1240px;margin:0 auto}
+    .rhythm .lab{color:rgba(246,244,239,0.5);margin-bottom:22px}
+    .rhythm .strip{display:grid;grid-template-columns:repeat(7,1fr)}
+    .rhythm .s{border-left:1px solid rgba(246,244,239,0.18);padding:0 18px}
+    .rhythm .s:first-child{border-left:0;padding-left:0}
+    .rhythm .s .t{font-family:'Bricolage Grotesque',Arial,sans-serif;font-weight:600;font-size:14px;color:var(--blue-ink)}
+    .rhythm .s .w{font-family:'Bricolage Grotesque',Arial,sans-serif;font-weight:600;font-size:17px;margin:8px 0 4px}
+    .rhythm .s .l{font-size:12.5px;color:rgba(246,244,239,0.7);line-height:1.5}
+
+    .controls{padding:40px 72px 26px;max-width:1240px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:18px}
+    .seg{display:flex;border:1px solid var(--ink)}
+    .seg button{background:transparent;border:0;min-height:44px;padding:0 22px;font:inherit;font-weight:600;cursor:pointer;color:var(--ink)}
+    .seg button.on{background:var(--ink);color:var(--paper)}
+    .chips{display:flex;gap:10px}
+    .chip{border:1px solid var(--hair);min-height:44px;display:inline-flex;align-items:center;padding:0 16px;font-size:13.5px;border-radius:2px}
+    .chip.on{background:var(--blue);color:var(--paper);border-color:var(--blue)}
+
+    .month{max-width:1240px;margin:0 auto;padding:0 72px 30px}
+    .mnav{display:flex;align-items:center;gap:24px;margin-bottom:20px}
+    .mnav h2{font-size:34px;letter-spacing:-0.02em}
+    .mnav button{width:44px;height:44px;border:1px solid var(--hair);background:transparent;border-radius:50%;cursor:pointer;
+      display:flex;align-items:center;justify-content:center}
+    .mnav .tint{margin-left:auto;font-size:12.5px;color:var(--muted);display:flex;align-items:center;gap:8px}
+    .mnav .tint i{width:14px;height:14px;background:rgba(187,65,152,0.16);border:1px solid rgba(187,65,152,0.4);display:block}
+    .grid{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;background:var(--hair);border:1px solid var(--hair)}
+    .dh{background:var(--paper);padding:10px 12px;font-size:12px;letter-spacing:0.06em;text-transform:uppercase;color:var(--muted)}
+    .cell{background:var(--paper);min-height:116px;padding:10px 12px}
+    .cell.out{background:#efece5;color:var(--muted)}
+    .cell .num{font-family:'Bricolage Grotesque',Arial,sans-serif;font-weight:600;font-size:15px}
+    .cell.today .num{background:var(--blue);color:var(--paper);width:26px;height:26px;border-radius:50%;
+      display:flex;align-items:center;justify-content:center}
+    .cell .ev{margin-top:8px;font-size:12px;line-height:1.35;color:#33302c;border-left:2px solid var(--blue-link);padding-left:6px}
+
+    .agenda{max-width:1000px;margin:0 auto;padding:60px 72px 100px}
+    .agenda h2{font-family:'Bricolage Grotesque',Arial,sans-serif;font-weight:500;font-size:14px;letter-spacing:0.03em;
+      text-transform:lowercase;color:var(--muted);margin:0 0 26px}
+    .ai{display:flex;gap:26px;padding:24px 0;border-top:1px solid var(--hair);align-items:flex-start}
+    .ai:last-child{border-bottom:1px solid var(--hair)}
+    .ai .date{flex:0 0 130px;font-family:'Bricolage Grotesque',Arial,sans-serif;font-weight:600;font-size:15px}
+    .ai .date span{display:block;color:var(--muted);font-weight:500;font-size:13px}
+    .ai .body{flex:1}
+    .ai .body h3{font-family:'Bricolage Grotesque',Arial,sans-serif;font-weight:600;font-size:20px;letter-spacing:-0.01em}
+    .ai .body .cat{display:inline-block;margin-top:6px;font-size:11px;letter-spacing:0.06em;text-transform:uppercase;
+      background:var(--blue-wash);color:var(--blue-link);padding:2px 8px}
+    .ai .body p{margin-top:10px;color:#33302c;font-size:14.5px;max-width:56ch}
+    .ai .ics{flex:0 0 auto;border:1px solid var(--ink);background:transparent;padding:10px 16px;font:inherit;
+      font-size:13px;font-weight:600;cursor:pointer;border-radius:2px}
+
+    .ft{background:var(--ink);color:var(--paper);padding:80px 72px 40px}
+    .ft .wm{font-family:'Bricolage Grotesque',Arial,sans-serif;font-weight:700;font-size:40px;letter-spacing:-0.02em;
+      padding-bottom:28px;border-bottom:1px solid rgba(246,244,239,0.18)}
+    .ft .cols{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:40px;padding:36px 0}
+    .ft h4{font-size:13px;letter-spacing:0.08em;text-transform:uppercase;color:rgba(246,244,239,0.5);margin:0 0 14px;font-weight:600}
+    .ft a,.ft p{color:rgba(246,244,239,0.82);font-size:14.5px;line-height:1.7;display:block}
+    .ft .bot{border-top:1px solid rgba(246,244,239,0.18);padding-top:22px;color:rgba(246,244,239,0.5);font-size:13px}
+  </style>
+</helmet>
+<div>
+  <header class="hdr">
+    <b><span class="dot"></span> ACC</b>
+    <nav><a>Home</a><a>About</a><a>Domains</a><a>Prayers</a><a class="on">Calendar</a><a>Media</a><a>Contact</a></nav>
+    <div class="soc"><a>Instagram</a><a>WhatsApp</a></div>
+  </header>
+
+  <section class="head">
+    <h1 class="disp">Calendar</h1>
+    <p>Feast days, ACC events, liturgy, and outreach — filter below, or add anything straight to your phone's calendar.</p>
+  </section>
+
+  <section class="rhythm">
+    <div class="in">
+      <p class="lab">the week, as we keep it</p>
+      <div class="strip">
+        <div class="s"><p class="t">Daily</p><p class="w">Daily Mass</p><p class="l">7:30 am · PU Chapel</p></div>
+        <div class="s"><p class="t">Daily</p><p class="w">Rosary</p><p class="l">7:00 pm · St. Kuriakose Elias Chapel</p></div>
+        <div class="s"><p class="t">Daily</p><p class="w">Confessions</p><p class="l">Before Daily Mass · also once a month</p></div>
+        <div class="s"><p class="t">1st Friday</p><p class="w">Monthly Mass</p><p class="l">12:00 pm · prepared by a department</p></div>
+        <div class="s"><p class="t">1st Friday</p><p class="w">Adoration</p><p class="l">8:00 pm</p></div>
+        <div class="s"><p class="t">Weekly</p><p class="w">Sunday Mass</p><p class="l">8:00 am</p></div>
+        <div class="s"><p class="t">In Lent</p><p class="w">Way of the Cross</p><p class="l">Lent season</p></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="controls">
+    <div class="seg"><button class="on">Month</button><button>Agenda</button></div>
+    <div class="chips">
+      <span class="chip on">Feast</span>
+      <span class="chip">ACC Event</span>
+      <span class="chip">Liturgy</span>
+      <span class="chip">Outreach</span>
+    </div>
+  </div>
+
+  <section class="month">
+    <div class="mnav">
+      <button><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button>
+      <h2 class="disp">September 2026</h2>
+      <button><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></button>
+      <span class="tint"><i></i> Lent and Advent carry a faint tint — Ordinary Time (now) has none</span>
+    </div>
+    <div class="grid">
+      <div class="dh">Sun</div><div class="dh">Mon</div><div class="dh">Tue</div><div class="dh">Wed</div><div class="dh">Thu</div><div class="dh">Fri</div><div class="dh">Sat</div>
+
+      <div class="cell out"><span class="num">30</span></div>
+      <div class="cell out"><span class="num">31</span></div>
+      <div class="cell"><span class="num">1</span></div>
+      <div class="cell"><span class="num">2</span></div>
+      <div class="cell"><span class="num">3</span></div>
+      <div class="cell"><span class="num">4</span></div>
+      <div class="cell"><span class="num">5</span></div>
+
+      <div class="cell today"><span class="num">6</span></div>
+      <div class="cell"><span class="num">7</span></div>
+      <div class="cell"><span class="num">8</span><p class="ev">Nativity of the Blessed Virgin Mary — Monti Fest</p></div>
+      <div class="cell"><span class="num">9</span></div>
+      <div class="cell"><span class="num">10</span></div>
+      <div class="cell"><span class="num">11</span></div>
+      <div class="cell"><span class="num">12</span></div>
+
+      <div class="cell"><span class="num">13</span></div>
+      <div class="cell"><span class="num">14</span></div>
+      <div class="cell"><span class="num">15</span></div>
+      <div class="cell"><span class="num">16</span></div>
+      <div class="cell"><span class="num">17</span></div>
+      <div class="cell"><span class="num">18</span></div>
+      <div class="cell"><span class="num">19</span></div>
+
+      <div class="cell"><span class="num">20</span></div>
+      <div class="cell"><span class="num">21</span></div>
+      <div class="cell"><span class="num">22</span></div>
+      <div class="cell"><span class="num">23</span></div>
+      <div class="cell"><span class="num">24</span></div>
+      <div class="cell"><span class="num">25</span></div>
+      <div class="cell"><span class="num">26</span></div>
+
+      <div class="cell"><span class="num">27</span><p class="ev">St. Vincent de Paul</p></div>
+      <div class="cell"><span class="num">28</span></div>
+      <div class="cell"><span class="num">29</span><p class="ev">Ss. Michael, Gabriel &amp; Raphael</p></div>
+      <div class="cell"><span class="num">30</span></div>
+      <div class="cell out"><span class="num">1</span></div>
+      <div class="cell out"><span class="num">2</span></div>
+      <div class="cell out"><span class="num">3</span></div>
+    </div>
+  </section>
+
+  <section class="agenda">
+    <h2>upcoming</h2>
+    <div class="ai">
+      <div class="date">Tue, 8 Sept<span>2026</span></div>
+      <div class="body">
+        <h3>Nativity of the Blessed Virgin Mary — Monti Fest</h3>
+        <span class="cat">Feast</span>
+        <p>Kept at the chapel; description shown from the feast calendar.</p>
+      </div>
+      <button class="ics">Add to calendar</button>
+    </div>
+    <div class="ai">
+      <div class="date">Sun, 27 Sept<span>2026</span></div>
+      <div class="body">
+        <h3>St. Vincent de Paul</h3>
+        <span class="cat">Feast</span>
+        <p>Patron of works of charity.</p>
+      </div>
+      <button class="ics">Add to calendar</button>
+    </div>
+    <div class="ai">
+      <div class="date">Tue, 29 Sept<span>2026</span></div>
+      <div class="body">
+        <h3>Ss. Michael, Gabriel and Raphael, Archangels</h3>
+        <span class="cat">Feast</span>
+        <p>Feast of the Archangels.</p>
+      </div>
+      <button class="ics">Add to calendar</button>
+    </div>
+    <div class="ai">
+      <div class="date">—<span>date to come</span></div>
+      <div class="body">
+        <h3>Bereshith, Transcend, Inaugural Mass</h3>
+        <span class="cat">ACC Event</span>
+        <p><span style="border:1px dashed var(--muted);color:var(--muted);font-size:12px;padding:3px 9px;border-radius:3px">NEEDS DATA: 2026 dates for named ACC events</span></p>
+      </div>
+    </div>
+  </section>
+
+  <footer class="ft">
+    <div class="wm">Association of Christian Christites</div>
+    <div class="cols">
+      <div><h4>The chapel</h4><p>Chapel of St. Kuriakose Elias Chavara<br>CHRIST (Deemed to be University)<br>Kengeri Campus, Bengaluru 560074</p><a href="#">Open in Maps</a></div>
+      <div><h4>Pages</h4><a>About</a><a>Domains</a><a>Prayers</a><a>Calendar</a><a>Media</a><a>Contact</a></div>
+      <div><h4>Come along</h4><a href="#">Join the WhatsApp group</a><a href="#">@acc_kengeri</a><a href="#">acc.kengeri@christuniversity.in</a></div>
+    </div>
+    <div class="bot">© 2026 Association of Christian Christites</div>
+  </footer>
+</div>
+</x-dc>
+</body>
+</html>

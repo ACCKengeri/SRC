@@ -1,0 +1,492 @@
+---
+import { getCollection, type CollectionEntry } from 'astro:content';
+import { Image } from 'astro:assets';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import TeamFace from '../../components/TeamFace.astro';
+import { getFaces } from '../../lib/team';
+import { headGroups as groupHeads, teamSignature } from '../../lib/team-shape';
+import { domainBanners, getDomainGallery } from '../../lib/domain-images';
+import Needs from '../../components/Needs.astro';
+
+export async function getStaticPaths() {
+  const domains = await getCollection('domains');
+  return domains.map((domain) => ({
+    params: { id: domain.data.id },
+    props: { domain },
+  }));
+}
+
+interface Props {
+  domain: CollectionEntry<'domains'>;
+}
+
+const { domain }: Props = Astro.props;
+const { data } = domain;
+const base = import.meta.env.BASE_URL;
+
+const allDomains = (await getCollection('domains')).sort((a, b) => a.data.order - b.data.order);
+const others = allDomains.filter((d) => d.data.id !== data.id).map((d) => ({ id: d.data.id, name: d.data.name }));
+
+const team = await getFaces();
+const heads = team.filter((m) => m.domain === data.id);
+// Audio & Visual's heads come in three sub-teams; name them when there's more than one.
+const headGroups = groupHeads(team, data.id).map((g) => [g.group, g.people as typeof heads] as const);
+const banner = domainBanners[data.id];
+const gallery = getDomainGallery(data.id);
+// The gallery is a scrapbook: prints a little crooked, coloured paper tucked behind.
+const TILT = [-1, 0.8, -0.6, 1.1, -0.9];
+const TUCK = ['print--seafoam', '', 'print--butter', 'print--sky', 'print--left'];
+---
+
+<BaseLayout title={`${data.name} | Association of Christian Christites`} description={data.subtitle}>
+  <section class="banner">
+    {
+      banner && (
+        <Image
+          class="banner__photo"
+          src={banner}
+          alt={`The ${data.name} domain`}
+          widths={[640, 1024, 1600]} width={1600}
+          sizes="(max-width: 82rem) 100vw, 80rem"
+          loading="eager"
+        />
+      )
+    }
+    <div class="banner__scrim"></div>
+    <div class="banner__in on-deep">
+      <p class="banner__kick">A student-led team at the Kengeri campus.</p>
+      <h1>{data.name}</h1>
+      <p class="banner__tag">{data.subtitle}</p>
+    </div>
+  </section>
+
+  <section class="what">
+    <p class="reveal">{data.whatWeDo}</p>
+  </section>
+
+  <section class="contrib" aria-labelledby="contrib-heading">
+    <h2 id="contrib-heading" class="label">what this domain contributes</h2>
+    <div class="contrib__grid">
+      {
+        data.contributions.map((c, i) => (
+          <div class="contrib__c sheet sheet--card reveal-lay" style={`--reveal-i:${i};--lay-r:${i % 2 ? -1.2 : 1.2}deg`}>
+            <h3>{c.title}</h3>
+            <p>{c.description}</p>
+          </div>
+        ))
+      }
+    </div>
+  </section>
+
+  {
+    heads.length > 0 && (
+      <section class="heads" aria-labelledby="heads-heading" data-domain={data.id} data-team-sig={teamSignature(heads)}>
+        <div class="heads__in sheet p-seafoam">
+          <h2 id="heads-heading" class="label heads__label">
+            {heads.length > 1 ? 'Heads' : 'Head'}
+          </h2>
+          <div class="heads__body">
+            {headGroups.map(([group, people]) => (
+              <div class="heads__group">
+                {group && <h3 class="heads__group-name">{group}</h3>}
+                <ul class="heads__grid" role="list">
+                  {people.map((person, j) => (
+                    <TeamFace name={person.name} imageSource={person.imageSource} tilt={[-1.1, 0.8, -0.5][j % 3]} />
+                  ))}
+                </ul>
+              </div>
+            ))}
+            <p class="heads__contact" hidden={!data.headContact}>{data.headContact}</p>
+            {!data.headContact && <Needs class="heads__contact">NEEDS COPY: direct contact for the heads</Needs>}
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  {
+    gallery.length > 0 && (
+      <section class="gallery" aria-labelledby="gallery-heading">
+        <h2 id="gallery-heading" class="label">gallery</h2>
+        <div class="gallery__grid" data-count={gallery.length}>
+          {gallery.map((img, i) => (
+            <div
+              class:list={['gallery__c', 'print', TUCK[i % TUCK.length], 'reveal-lay']}
+              style={`--reveal-i:${i % 4};--lay-r:${TILT[i % TILT.length] * 2}deg;--rest-r:${TILT[i % TILT.length]}deg`}
+            >
+              <Image
+                src={img}
+                alt={`${data.name} in action`}
+                widths={[320, 640]} width={640}
+                sizes="(max-width: 40rem) 50vw, 25vw"
+                class="graded"
+              />
+            </div>
+          ))}
+        </div>
+      </section>
+    )
+  }
+
+  <section class="join">
+    <div class="cast"><div class="join__in sheet torn-top p-coral">
+      <h2>Join {data.name}</h2>
+      <p>New members are welcome each semester.</p>
+      <div class="join__cta">
+        <a class="btn" href={data.joinLink} target="_blank" rel="noopener noreferrer">Join the team</a>
+        {data.hoursPerWeek ? (
+          <span class="join__hours">About {data.hoursPerWeek} a week.</span>
+        ) : (
+          <Needs>NEEDS COPY: what joining costs in hours per week</Needs>
+        )}
+      </div>
+    </div></div>
+  </section>
+
+  <section class="next">
+    <p class="label">explore the other domains</p>
+    <p class="next__names">
+      {others.map((o, i) => (
+        <>{i > 0 ? ',  ' : ''}<a href={`${base}domains/${o.id}/`}>{o.name}</a></>
+      ))}
+    </p>
+  </section>
+</BaseLayout>
+
+<script>
+  // The live heads and contact line from the Sheet, laid out as the build
+  // lays them; redrawn only when they differ from what's on the page.
+  import { onLive } from '../../lib/live/read';
+  import { el, drivePhoto, initials } from '../../lib/live/dom';
+  import { headGroups, teamSignature } from '../../lib/team-shape';
+
+  const section = document.querySelector<HTMLElement>('section.heads');
+  const body = section?.querySelector<HTMLElement>('.heads__body');
+  const faceLike = section?.querySelector('.face') ?? null;
+  const contact = section?.querySelector<HTMLElement>('p.heads__contact');
+  const TILT = [-1.1, 0.8, -0.5];
+
+  onLive((d) => {
+    if (!section || !body) return;
+    const domain = section.dataset.domain!;
+    const live = d.domains?.find((x) => x.domain === domain);
+    if (contact && live?.contact) {
+      contact.textContent = live.contact;
+      contact.hidden = false;
+      section.querySelectorAll('.needs.heads__contact').forEach((n) => n.remove());
+    }
+    if (!d.team || !faceLike) return;
+    const heads = d.team.filter((p) => p.domain === domain && !p.hidden);
+    const sig = teamSignature(heads);
+    if (sig === section.dataset.teamSig) return;
+    section.dataset.teamSig = sig;
+    section.hidden = heads.length === 0;
+    const label = section.querySelector('.heads__label');
+    if (label) label.textContent = heads.length > 1 ? 'Heads' : 'Head';
+    body.querySelectorAll('.heads__group').forEach((g) => g.remove());
+    for (const g of headGroups(heads, domain).reverse()) {
+      const box = el('div', body, 'heads__group');
+      if (g.group) box.appendChild(el('h3', body, 'heads__group-name', g.group));
+      const ul = el('ul', body, 'heads__grid');
+      ul.setAttribute('role', 'list');
+      g.people.forEach((p, j) => {
+        const li = el('li', faceLike, 'face');
+        li.style.setProperty('--tilt', `${TILT[j % 3]}deg`);
+        const print = el('span', faceLike, 'face__print');
+        if (p.photo) print.appendChild(drivePhoto(p.photo, '(max-width: 48rem) 45vw, 11rem'));
+        else {
+          const ini = el('span', faceLike, 'face__ini', initials(p.name));
+          ini.setAttribute('aria-hidden', 'true');
+          print.appendChild(ini);
+        }
+        li.append(print, el('span', faceLike, 'face__name', p.name));
+        ul.appendChild(li);
+      });
+      box.appendChild(ul);
+      body.prepend(box);
+    }
+  });
+</script>
+
+<style>
+  /* A rounded photo window inside the page, not a full-bleed dark band. */
+  .banner {
+    position: relative;
+    max-width: calc(var(--container-wide) - 2 * var(--gutter));
+    margin: var(--space-4) auto 0;
+    min-height: min(56svh, 34rem);
+    display: flex;
+    align-items: flex-end;
+    overflow: hidden;
+    border-radius: var(--radius-sm);
+    background: var(--teal-wash);
+    isolation: isolate;
+    /* mounted: a paper mat, and a sheet of seafoam showing behind */
+    border: 10px solid var(--sheet);
+    box-shadow: 14px 16px 0 var(--seafoam), var(--lift-2);
+  }
+  @media (max-width: 82rem) {
+    .banner {
+      margin-inline: var(--gutter);
+    }
+  }
+  .banner :global(.banner__photo) {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .banner__scrim {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(0deg, var(--scrim-strong) 0%, var(--scrim-soft) 55%, transparent 75%);
+  }
+  .banner__in {
+    position: relative;
+    width: 100%;
+    max-width: var(--container-wide);
+    margin: 0 auto;
+    padding: 0 clamp(1.25rem, 4vw, 3.5rem) clamp(1.5rem, 4vw, 3rem);
+    color: var(--on-deep);
+  }
+  .banner__kick {
+    color: color-mix(in srgb, var(--on-deep) 80%, transparent);
+    margin-bottom: var(--space-3);
+  }
+  .banner__in h1 {
+    font-size: var(--text-h1);
+    letter-spacing: -0.035em;
+  }
+  .banner__tag {
+    margin-top: var(--space-3);
+    font-size: var(--text-lead);
+    color: color-mix(in srgb, var(--on-deep) 88%, transparent);
+  }
+
+  .what {
+    max-width: var(--container-read);
+    margin: 0 auto;
+    padding: var(--space-10) var(--gutter) var(--space-9);
+  }
+  .what p {
+    font-family: var(--font-display);
+    font-weight: 500;
+    color: var(--teal);
+    font-size: var(--text-h3);
+    line-height: 1.4;
+    letter-spacing: -0.01em;
+  }
+
+  .contrib {
+    max-width: var(--container-wide);
+    margin: 0 auto;
+    padding: 0 var(--gutter) var(--space-9);
+  }
+  .contrib > .label {
+    display: block;
+    margin-bottom: var(--space-6);
+  }
+  .contrib__grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-4);
+  }
+  /* Each contribution on its own card, one corner folded over. */
+  .contrib__grid {
+    gap: clamp(1.25rem, 3vw, 2rem);
+  }
+  .contrib__c {
+    position: relative;
+    padding: var(--space-6) var(--space-7) var(--space-6) var(--space-6);
+  }
+  .contrib__c::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 30px;
+    height: 30px;
+    border-radius: 0 var(--radius-sm) 0 4px;
+    background: linear-gradient(225deg, var(--paper) 50%, var(--butter) 50%);
+    box-shadow: -2px 2px 3px rgba(11, 63, 67, 0.16);
+  }
+  .contrib__c h3 {
+    font-size: var(--text-h4);
+    color: var(--teal);
+    margin-bottom: var(--space-3);
+  }
+  .contrib__c p {
+    color: var(--text-muted);
+    font-size: var(--text-small);
+  }
+
+  .heads {
+    max-width: var(--container-wide);
+    margin: 0 auto;
+    padding: 0 var(--gutter);
+  }
+  .heads__in {
+    --badge: var(--butter);
+    padding: clamp(2rem, 5vw, 4rem);
+    box-shadow: var(--lift-2);
+  }
+  /* The heading sits beside the badges: one head or several, the sheet is
+     never a large empty panel. */
+  .heads__in {
+    display: grid;
+    grid-template-columns: minmax(10rem, 0.5fr) 1fr;
+    gap: var(--space-6) var(--space-8);
+    align-items: center;
+  }
+  .heads__label {
+    display: block;
+    font-size: var(--text-h2);
+    letter-spacing: -0.03em;
+    color: var(--ink-strong);
+  }
+  /* Each sub-team (Choir, Dance, Theatre) on its own row, under its name. */
+  .heads__body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+    min-width: 0;
+  }
+  .heads__group-name {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: var(--text-h4);
+    letter-spacing: -0.02em;
+    color: var(--ink-strong);
+    margin-bottom: var(--space-4);
+  }
+  .heads__grid {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 11rem));
+    gap: var(--space-5) var(--space-5);
+  }
+  @media (max-width: 48rem) {
+    .heads__in {
+      grid-template-columns: 1fr;
+    }
+    .heads__grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  .heads :global(.heads__contact) {
+    align-self: flex-start;
+    font-size: var(--text-micro);
+  }
+
+  .gallery {
+    max-width: var(--container-wide);
+    margin: 0 auto;
+    padding: var(--space-9) var(--gutter);
+  }
+  .gallery > .label {
+    display: block;
+    margin-bottom: var(--space-6);
+  }
+  .gallery__grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: clamp(1.5rem, 3vw, 2.5rem);
+  }
+  /* Five photos: the first is a 2x2 feature with four beside it, so the grid
+     closes as two full rows instead of leaving an orphan tile. */
+  .gallery__grid[data-count='5'] .gallery__c:first-child {
+    grid-column: span 2;
+    grid-row: span 2;
+    aspect-ratio: auto;
+  }
+  .gallery__grid[data-count='3'] {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .gallery__c {
+    aspect-ratio: 4 / 5;
+    --mat: 7px;
+    --ux: 8px;
+    --uy: 9px;
+    transition: transform 0.5s var(--ease-soft), opacity 0.6s var(--ease-soft);
+  }
+  .gallery__c.is-in:hover {
+    transform: translateY(-4px) rotate(0deg) scale(1.02);
+  }
+
+  .join {
+    max-width: var(--container-wide);
+    margin: 0 auto var(--space-7);
+    padding: 0 var(--gutter);
+  }
+  .join__in {
+    padding: clamp(2.5rem, 6vw, 4.5rem);
+  }
+  .join__in h2 {
+    font-size: var(--text-h2);
+    letter-spacing: -0.03em;
+    color: var(--ink-strong);
+  }
+  .join__in > p {
+    margin-top: var(--space-4);
+    color: var(--ink);
+    font-size: var(--text-lead);
+  }
+  .join__cta {
+    margin-top: var(--space-5);
+    display: flex;
+    gap: var(--space-4);
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .join__hours {
+    font-size: var(--text-small);
+    color: var(--ink);
+  }
+
+  .next {
+    max-width: var(--container-wide);
+    margin: 0 auto;
+    padding: var(--space-7) var(--gutter);
+    border-top: 2px dashed var(--hair);
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: var(--space-5);
+    flex-wrap: wrap;
+  }
+  .next__names {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: var(--text-h4);
+    color: var(--teal);
+  }
+  .next__names a {
+    text-decoration: underline;
+    text-decoration-color: transparent;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 0.2em;
+    transition: text-decoration-color var(--duration-quick) var(--ease-quick);
+  }
+  .next__names a:hover {
+    text-decoration-color: var(--mark);
+  }
+
+  @media (max-width: 56rem) {
+    .contrib__grid {
+      grid-template-columns: 1fr;
+    }
+    .gallery__grid,
+    .gallery__grid[data-count='3'] {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    /* On two columns an odd count closes with a full-width first photo. */
+    .gallery__grid[data-count='5'] .gallery__c:first-child,
+    .gallery__grid[data-count='3'] .gallery__c:first-child {
+      grid-row: auto;
+      aspect-ratio: 16 / 10;
+    }
+  }
+</style>

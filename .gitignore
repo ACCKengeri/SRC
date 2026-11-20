@@ -1,0 +1,15 @@
+# dependencies and build output
+node_modules/
+dist/
+.astro/
+.vercel/
+
+# local only
+.env
+.DS_Store
+acc-website.zip
+scratchpad/
+.playwright-cli/
+
+# a saved copy of a reference site (1.5 GB, and paths too long for Git on Windows)
+refs/

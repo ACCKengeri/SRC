@@ -1,0 +1,134 @@
+---
+import { Image } from 'astro:assets';
+import { instaTiles } from '../lib/instagram';
+import { getCollection } from 'astro:content';
+
+// A scrapbook page: each print sits a little crooked, with a sheet of
+// coloured paper tucked behind it.
+const TILT = [-1.2, 0.8, -0.5, 1.1, -0.9, 0.6];
+const TUCK = ['print--seafoam', '', 'print--butter', 'print--sky', 'print--left', 'print--seafoam'];
+
+const campuses = (await getCollection('campuses'))
+  .filter((c) => !c.data.primary)
+  .map((c) => c.data);
+---
+
+<section class="ig sheet p-sheet" aria-labelledby="ig-heading">
+  <div class="ig__head reveal">
+    <h2 id="ig-heading">From the community</h2>
+    <p class="ig__handle">@acc_kengeri on Instagram</p>
+  </div>
+
+  <div class="ig__grid">
+    {
+      instaTiles.map((tile, i) => (
+        <a
+          class:list={['ig__tile', 'print', TUCK[i % TUCK.length], 'reveal-lay']}
+          style={`--reveal-i:${i % 3};--lay-r:${TILT[i % TILT.length] * 2}deg;--rest-r:${TILT[i % TILT.length]}deg`}
+          href={tile.href}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <Image src={tile.image} alt={tile.alt} widths={[280, 520]} width={520} sizes="(max-width: 40rem) 45vw, 30vw" />
+        </a>
+      ))
+    }
+  </div>
+
+  <div class="ig__foot reveal">
+    <p class="ig__campuses">
+      Other campuses on Instagram:
+      {campuses.map((c, i) => (
+        <>{i > 0 ? ', ' : ' '}<a href={c.instagram} data-live-href={`instagram_${c.id}`} target="_blank" rel="noopener noreferrer">{c.name}</a></>
+      ))}
+    </p>
+    <a class="ig__cta" href="https://www.instagram.com/acc_kengeri/" data-live-href="instagram_kengeri" target="_blank" rel="noopener noreferrer">
+      Follow @acc_kengeri
+    </a>
+  </div>
+</section>
+
+<style>
+  /* The whole section is one large sheet laid on the ground: a scrapbook page. */
+  .ig {
+    max-width: calc(var(--container-wide) - 2 * var(--gutter));
+    margin: 0 auto var(--space-10);
+    padding: clamp(1.5rem, 4vw, 3.5rem);
+    box-shadow: var(--lift-2);
+  }
+  @media (max-width: 80rem) {
+    .ig {
+      margin-inline: var(--gutter);
+    }
+  }
+  .ig__head {
+    margin-bottom: var(--space-7);
+  }
+  .ig__head h2 {
+    font-size: var(--text-h2);
+    letter-spacing: -0.03em;
+    color: var(--teal);
+  }
+  .ig__handle {
+    margin-top: var(--space-3);
+    color: var(--text-muted);
+    font-size: var(--text-small);
+  }
+
+  .ig__grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: clamp(1.5rem, 3.5vw, 3rem) clamp(1.25rem, 3vw, 2.5rem);
+  }
+  .ig__tile {
+    aspect-ratio: 1;
+    --mat: 7px;
+    --ux: 8px;
+    --uy: 9px;
+    transition: transform 0.5s var(--ease-soft), opacity 0.6s var(--ease-soft);
+  }
+  .ig__tile :global(img) {
+    filter: saturate(0.96) contrast(1.04);
+  }
+  .ig__tile.is-in:hover,
+  .ig__tile.is-in:focus-visible {
+    transform: translateY(-4px) rotate(0deg) scale(1.02);
+  }
+
+  .ig__foot {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--space-4);
+    flex-wrap: wrap;
+    margin-top: var(--space-7);
+    padding-top: var(--space-5);
+    border-top: 2px dashed var(--hair);
+  }
+  .ig__campuses {
+    color: var(--text-muted);
+    font-size: var(--text-small);
+  }
+  .ig__campuses a {
+    text-decoration: underline;
+    text-decoration-color: var(--hair);
+    text-underline-offset: 0.15em;
+  }
+  .ig__cta {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    font-weight: 700;
+    color: var(--teal);
+    text-decoration: underline;
+    text-decoration-color: var(--mark);
+    text-decoration-thickness: 2px;
+    text-underline-offset: 0.35em;
+  }
+
+  @media (max-width: 40rem) {
+    .ig__grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+</style>

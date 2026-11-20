@@ -1,0 +1,157 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300..800&family=Schibsted+Grotesk:wght@400..700&display=swap');
+    :root{--paper:#F6F4EF;--ink:#141210;--blue:#1E51F7;--blue-link:#1B3FC9;--blue-ink:#9DB2FF;--blue-wash:#E7ECFB;--muted:#5C5A55;--hair:#D8D5CC}
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--paper);color:var(--ink);font-family:'Schibsted Grotesk',Arial,sans-serif;
+      font-size:17px;line-height:1.55;-webkit-font-smoothing:antialiased}
+    .disp{font-family:'Bricolage Grotesque',Arial,sans-serif;font-weight:600;line-height:1.0;letter-spacing:-0.025em;margin:0}
+    p{margin:0} a{color:inherit;text-decoration:none}
+    .wide{max-width:1280px;margin:0 auto;padding:0 72px}
+    .label{font-family:'Bricolage Grotesque',Arial,sans-serif;font-weight:500;font-size:14px;
+      letter-spacing:0.03em;color:var(--muted);text-transform:lowercase}
+
+    .hdr{display:flex;align-items:center;justify-content:space-between;padding:26px 72px;
+      border-bottom:1px solid var(--hair);position:sticky;top:0;background:rgba(246,244,239,0.92);
+      backdrop-filter:blur(8px);z-index:5}
+    .hdr b{font-family:'Bricolage Grotesque',Arial,sans-serif;font-weight:700;font-size:19px;
+      display:flex;align-items:center;gap:12px;letter-spacing:0.02em}
+    .hdr .dot{width:22px;height:22px;border:2px solid currentColor;border-radius:50%}
+    .hdr nav{display:flex;gap:28px;font-size:15px;font-weight:500}
+    .hdr nav a:hover{color:var(--blue-link)}
+    .hdr nav a.on{color:var(--blue-link)}
+    .hdr .soc{display:flex;gap:16px;font-size:14px;color:var(--muted)}
+    .hdr .soc a:hover{color:var(--blue-link)}
+
+    .head{padding:110px 72px 70px;max-width:1280px;margin:0 auto}
+    .head h1{font-size:104px;letter-spacing:-0.04em;line-height:0.94;max-width:12ch}
+    .head p{margin-top:28px;font-size:20px;color:#33302c;max-width:46ch}
+    .head .label{margin:0 0 20px}
+    .strip{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin:0 auto 40px;max-width:1280px;padding:0 72px}
+    .strip div{aspect-ratio:1;overflow:hidden;background:var(--ink)}
+    .strip img{width:100%;height:100%;object-fit:cover;filter:saturate(0.9) contrast(1.05) brightness(0.9)}
+
+    .belief{background:var(--ink);color:var(--paper);padding:120px 72px}
+    .belief .in{max-width:1000px;margin:0 auto}
+    .belief .lab{font-family:'Bricolage Grotesque',Arial,sans-serif;font-weight:500;font-size:14px;
+      letter-spacing:0.03em;color:rgba(246,244,239,0.5);text-transform:lowercase;margin-bottom:34px}
+    .belief .mv{display:flex;gap:60px;flex-wrap:wrap}
+    .belief .mv > div{flex:1;min-width:280px}
+    .belief .mv h2{font-size:44px;letter-spacing:-0.02em;line-height:1.05}
+    .belief .mv .k{font-size:13px;letter-spacing:0.08em;text-transform:uppercase;color:var(--blue-ink);
+      margin-bottom:14px;font-weight:600;font-family:'Bricolage Grotesque',Arial,sans-serif}
+    .belief .conn{margin-top:56px;font-size:19px;line-height:1.6;max-width:60ch;color:rgba(246,244,239,0.82);
+      border-top:1px solid rgba(246,244,239,0.18);padding-top:32px}
+
+    .acc{padding:110px 0 130px}
+    .acc h2.t{font-size:15px;letter-spacing:0.03em;color:var(--muted);text-transform:lowercase;
+      font-family:'Bricolage Grotesque',Arial,sans-serif;font-weight:500;margin:0 0 26px}
+    .item{border-top:1px solid var(--hair)}
+    .item:last-child{border-bottom:1px solid var(--hair)}
+    .row{display:flex;justify-content:space-between;align-items:baseline;padding:30px 0;gap:30px;cursor:pointer}
+    .row .n{font-family:'Bricolage Grotesque',Arial,sans-serif;font-weight:600;font-size:40px;letter-spacing:-0.02em}
+    .row .s{color:var(--muted);font-size:15px;flex:1;text-align:left;padding-left:40px}
+    .row .x{color:var(--muted);font-size:26px}
+    .open{border-left:2px solid var(--blue);margin-left:-1px;padding:0 0 40px 40px;
+      display:grid;grid-template-columns:1.1fr 1fr;gap:48px}
+    .open .desc{font-size:18px;line-height:1.6;color:#2a2622}
+    .open ul{list-style:none;padding:0;margin:0;display:grid;gap:16px}
+    .open ul b{font-family:'Bricolage Grotesque',Arial,sans-serif;font-weight:600;font-size:16px}
+    .open ul span{color:var(--muted);font-size:15px}
+    .open .cta{grid-column:1/-1;display:flex;gap:18px;align-items:center;margin-top:10px}
+    .btn{display:inline-flex;align-items:center;min-height:48px;padding:14px 26px;background:var(--ink);
+      color:var(--paper);font-weight:600;font-size:15px;border-radius:2px}
+    .btn--ghost{background:transparent;border:1px solid var(--ink);color:var(--ink)}
+    .needs{display:inline-block;border:1px dashed var(--muted);color:var(--muted);font-size:12px;padding:3px 9px;border-radius:3px}
+
+    .ft{background:var(--ink);color:var(--paper);padding:90px 72px 40px}
+    .ft .wm{font-family:'Bricolage Grotesque',Arial,sans-serif;font-weight:700;font-size:40px;letter-spacing:-0.02em;
+      padding-bottom:30px;border-bottom:1px solid rgba(246,244,239,0.18)}
+    .ft .cols{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:40px;padding:40px 0}
+    .ft h4{font-size:13px;letter-spacing:0.08em;text-transform:uppercase;color:rgba(246,244,239,0.5);margin:0 0 14px;font-weight:600}
+    .ft a,.ft p{color:rgba(246,244,239,0.82);font-size:14.5px;line-height:1.7;display:block}
+    .ft .bot{border-top:1px solid rgba(246,244,239,0.18);padding-top:22px;color:rgba(246,244,239,0.5);font-size:13px}
+  </style>
+</helmet>
+<div>
+  <header class="hdr">
+    <b><span class="dot"></span> ACC</b>
+    <nav><a>Home</a><a>About</a><a class="on">Domains</a><a>Prayers</a><a>Calendar</a><a>Media</a><a>Contact</a></nav>
+    <div class="soc"><a>Instagram</a><a>WhatsApp</a></div>
+  </header>
+
+  <section class="head">
+    <div class="label">the domains</div>
+    <h1 class="disp">Six domains,<br>one community</h1>
+    <p>Every member finds a place through one of six domains — each with its own work, its own heads, and its own way in. Each is run by students, for students.</p>
+  </section>
+  <div class="strip">
+    <div><img src="dom-animation.jpg" alt="Animation"></div>
+    <div><img src="dom-liturgy.jpg" alt="Liturgy"></div>
+    <div><img src="dom-outreach.jpg" alt="Outreach"></div>
+    <div><img src="dom-audiovisual.jpg" alt="Audio and Visual"></div>
+    <div><img src="dom-logistics.jpg" alt="Logistics and Hospitality"></div>
+    <div><img src="dom-media.jpg" alt="Media and Communication"></div>
+  </div>
+
+  <section class="belief">
+    <div class="in">
+      <p class="lab">what holds us together</p>
+      <div class="mv">
+        <div><p class="k">Mission</p><h2 class="disp">Following Christ,<br>Changing Lives</h2></div>
+        <div><p class="k">Vision</p><h2 class="disp">Family and<br>Fellowship</h2></div>
+      </div>
+      <p class="conn">ACC operates through six specialised domains that allow members to apply their unique talents — Animation, Liturgy, Outreach, Audio &amp; Visual, Logistics &amp; Hospitality, and Media &amp; Communication. Each domain is managed by a dedicated student volunteer body.</p>
+    </div>
+  </section>
+
+  <section class="acc wide">
+    <h2 class="t">choose a place</h2>
+
+    <div class="item"><div class="row"><span class="n">Animation</span><span class="s">Animating Faith: Inspiring Stories</span><span class="x">+</span></div></div>
+
+    <div class="item">
+      <div class="row"><span class="n">Liturgy</span><span class="s">Behind the scenes, building up worship.</span><span class="x">–</span></div>
+      <div class="open">
+        <p class="desc">The Liturgy Team is the backbone of ACC, orchestrating sacred ceremonies and guiding through spiritual rituals with reverence and care. From coordinating prayers and leading intercessory sessions to organising Holy Mass, we ensure meaningful worship experiences. Beyond our formal duties, we offer compassionate support, fostering a sense of belonging.</p>
+        <ul>
+          <li><b>Facilitating Spiritual Growth</b><br><span>Guidance and support during religious ceremonies, an environment to deepen spiritual connections and grow in faith.</span></li>
+          <li><b>Promoting Unity</b><br><span>Organising communal worship and care that strengthens bonds and a shared sense of purpose.</span></li>
+          <li><b>Emotional Support</b><br><span>Actively listening to individuals, offering guidance during spiritual reflection and personal struggle.</span></li>
+          <li><b>A Sense of Belonging</b><br><span>Inclusive spaces for confession and prayer, for every member regardless of background.</span></li>
+        </ul>
+        <div class="cta">
+          <a class="btn" href="#">Join Liturgy</a>
+          <a class="btn btn--ghost" href="#">Explore Liturgy</a>
+          <span class="needs">NEEDS COPY: hours per week</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="item"><div class="row"><span class="n">Outreach</span><span class="s">Touching Hearts, Changing Lives</span><span class="x">+</span></div></div>
+    <div class="item"><div class="row"><span class="n">Audio &amp; Visual</span><span class="s">Where faith finds its voice: A symphony of sight and soul.</span><span class="x">+</span></div></div>
+    <div class="item"><div class="row"><span class="n">Logistics &amp; Hospitality</span><span class="s">Blessed To Serve</span><span class="x">+</span></div></div>
+    <div class="item"><div class="row"><span class="n">Media &amp; Communication</span><span class="s">Capturing Faith, Sharing Stories</span><span class="x">+</span></div></div>
+  </section>
+
+  <footer class="ft">
+    <div class="wm">Association of Christian Christites</div>
+    <div class="cols">
+      <div><h4>The chapel</h4><p>Chapel of St. Kuriakose Elias Chavara<br>CHRIST (Deemed to be University)<br>Kengeri Campus, Bengaluru 560074</p><a href="#">Open in Maps</a></div>
+      <div><h4>Pages</h4><a>About</a><a>Domains</a><a>Prayers</a><a>Calendar</a><a>Media</a><a>Contact</a></div>
+      <div><h4>Come along</h4><a href="#">Join the WhatsApp group</a><a href="#">@acc_kengeri</a><a href="#">acc.kengeri@christuniversity.in</a></div>
+    </div>
+    <div class="bot">© 2026 Association of Christian Christites</div>
+  </footer>
+</div>
+</x-dc>
+</body>
+</html>

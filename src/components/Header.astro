@@ -1,0 +1,588 @@
+---
+import { primaryNav } from '../lib/nav';
+import accLogo from '../assets/brand/acc-logo.png';
+import PaperEdge from './PaperEdge.astro';
+import MenuFriend from './MenuFriend.astro';
+
+const base = import.meta.env.BASE_URL;
+const currentPath = Astro.url.pathname.replace(base, '').replace(/\/$/, '');
+const isCurrent = (slug: string) => currentPath === slug || currentPath.startsWith(slug + '/');
+// Every page, Home first, numbered like a contents page.
+const menu = [
+  { href: base, label: 'Home', blurb: 'The front page of ACC.', on: currentPath === '' },
+  ...primaryNav.map((l) => ({ href: `${base}${l.slug}/`, label: l.label, blurb: l.blurb, on: isCurrent(l.slug) })),
+];
+const INSTAGRAM = 'https://www.instagram.com/acc_kengeri/';
+const WHATSAPP = 'https://chat.whatsapp.com/KoTpbOt0HZB8Uq0PbNUqrj';
+---
+
+<div class="header-sentinel" id="header-sentinel" aria-hidden="true"></div>
+<header class="site-header" id="site-header">
+  <div class="site-header__inner">
+    <a class="wordmark" href={base} aria-label="Association of Christian Christites, home">
+      <span class="wordmark__logo" style={`--logo:url("${accLogo.src}")`} aria-hidden="true"></span>
+    </a>
+
+    <button class="menu-button" id="menu-button" aria-expanded="false" aria-controls="site-menu">
+      <span class="menu-button__bars" aria-hidden="true"></span>
+      <span class="menu-button__open">Menu</span>
+      <span class="menu-button__close">Close</span>
+    </button>
+  </div>
+
+  <!--
+    The site's navigation, at every width: one Menu button that opens a
+    full-screen sheet of deep teal paper. It drops down under the header bar
+    with the pages as a numbered contents list (and, on wider screens, a line
+    on what each holds) and a strip of coloured paper along the foot. Beside
+    the list on wide screens stands a cut-paper Jesus who watches the pointer
+    (MenuFriend); phones get a short "Come along" block instead. Without
+    JavaScript the footer carries the same links.
+  -->
+  <nav class="site-menu on-deep p-grain" id="site-menu" aria-label="Primary" data-lenis-prevent hidden>
+    <div class="site-menu__in">
+      <ol class="site-menu__list">
+        {
+          menu.map((m, i) => (
+            <li style={`--i:${i}`}>
+              <a
+                href={m.href}
+                class:list={['site-menu__link', { on: m.on }]}
+                aria-current={m.on ? 'page' : undefined}
+              >
+                <span class="site-menu__num" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+                <span class="site-menu__label">{m.label}</span>
+                <span class="site-menu__blurb">{m.blurb}</span>
+              </a>
+            </li>
+          ))
+        }
+      </ol>
+
+      <div class="site-menu__aside" style={`--i:${menu.length}`}>
+        <MenuFriend />
+        <div class="site-menu__come">
+          <p class="site-menu__k">Come along</p>
+          <div class="site-menu__card">
+            <p class="site-menu__what">Rosary, every evening</p>
+            <p>7:00 pm, St. Kuriakose Elias Chapel</p>
+          </div>
+          <div class="site-menu__soc">
+            <a href={INSTAGRAM} data-live-href="instagram_kengeri" target="_blank" rel="noopener noreferrer">Instagram</a>
+            <a href={WHATSAPP} data-live-href="whatsapp" target="_blank" rel="noopener noreferrer">WhatsApp</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <PaperEdge
+      layers={['var(--seafoam)', 'var(--butter)', 'var(--coral)']}
+      seed={57}
+      height="clamp(56px, 7vw, 96px)"
+      class="site-menu__edge"
+    />
+  </nav>
+</header>
+
+<style>
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    background: color-mix(in srgb, var(--bg) 88%, transparent);
+    -webkit-backdrop-filter: blur(12px) saturate(140%);
+    backdrop-filter: blur(12px) saturate(140%);
+    border-bottom: 1px solid transparent;
+    transition: border-color var(--duration-medium) var(--ease-quick),
+      background-color var(--duration-medium) var(--ease-quick);
+  }
+  .site-header.is-solid {
+    border-bottom-color: var(--border);
+    background: color-mix(in srgb, var(--bg) 94%, transparent);
+  }
+
+  .site-header__inner {
+    max-width: var(--container-wide);
+    min-height: var(--header-h);
+    margin: 0 auto;
+    padding: 0 var(--gutter);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-5);
+  }
+
+  .wordmark {
+    display: inline-flex;
+    align-items: center;
+    min-height: 48px;
+    flex: 0 0 auto;
+  }
+  /* The real ACC dove wordmark, drawn as a mask so it takes the teal. */
+  .wordmark__logo {
+    display: block;
+    height: 2.6rem;
+    aspect-ratio: 703 / 138;
+    background: var(--teal);
+    -webkit-mask: var(--logo) center / contain no-repeat;
+    mask: var(--logo) center / contain no-repeat;
+    transition: background-color var(--duration-medium) var(--ease-quick);
+  }
+
+  /* ---- the one button ---- */
+  .menu-button {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-3);
+    min-height: 44px;
+    background: none;
+    border: 1px solid var(--teal);
+    border-radius: var(--radius-pill);
+    padding: 0 var(--space-5) 0 var(--space-4);
+    font-size: var(--text-small);
+    color: var(--teal);
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.25s var(--ease-settle), color 0.25s, border-color 0.25s;
+  }
+  .menu-button:hover {
+    background-color: var(--teal-wash);
+  }
+  .menu-button:active {
+    transform: translateY(1px);
+  }
+  .menu-button__bars,
+  .menu-button__bars::before,
+  .menu-button__bars::after {
+    content: '';
+    display: block;
+    width: 16px;
+    height: 1.5px;
+    background: currentColor;
+    transition: transform 0.3s var(--ease-settle), background-color 0.2s;
+  }
+  .menu-button__bars {
+    position: relative;
+  }
+  .menu-button__bars::before {
+    position: absolute;
+    top: -5px;
+  }
+  .menu-button__bars::after {
+    position: absolute;
+    top: 5px;
+  }
+  .menu-button__close {
+    display: none;
+  }
+
+  /* ---- the sheet ---- */
+  .site-menu {
+    position: fixed;
+    inset: 0;
+    z-index: -1; /* under the header bar, inside the header's stacking context */
+    display: flex;
+    flex-direction: column;
+    padding-top: var(--header-h);
+    background-color: var(--teal-deep);
+    color: var(--on-deep);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    /* it drops down like a blind */
+    clip-path: inset(0 0 100% 0);
+    transition: clip-path 0.55s var(--ease-settle);
+  }
+  .site-menu[hidden] {
+    display: none;
+  }
+  .site-header.is-open .site-menu {
+    clip-path: inset(0 0 0 0);
+  }
+  .site-menu__in {
+    flex: 1 0 auto;
+    width: 100%;
+    max-width: var(--container-wide);
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(15rem, 20rem);
+    align-items: start;
+    gap: clamp(2rem, 6vw, 6rem);
+    padding: clamp(1.5rem, 5vh, 3.5rem) var(--gutter) var(--space-7);
+  }
+
+  .site-menu__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-top: 1px dashed var(--hair-on-deep);
+  }
+  .site-menu__list li {
+    border-bottom: 1px dashed var(--hair-on-deep);
+  }
+  /* number, page, what it holds */
+  .site-menu__link {
+    display: grid;
+    grid-template-columns: 2.6ch minmax(0, 15rem) minmax(0, 1fr);
+    align-items: baseline;
+    gap: var(--space-5);
+    padding: clamp(0.4rem, 1.2vh, 0.85rem) var(--space-3);
+    margin: 0 calc(-1 * var(--space-3));
+    border-radius: var(--radius-xs);
+    color: var(--on-deep);
+    text-decoration: none;
+    transition: background-color 0.3s var(--ease-settle);
+  }
+  .site-menu__num {
+    font-family: var(--font-display);
+    font-size: var(--text-small);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    color: var(--muted-on-deep);
+    transition: color 0.3s var(--ease-settle);
+  }
+  .site-menu__label {
+    position: relative;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(2rem, min(4vw, 6.2vh), 3.4rem);
+    line-height: 1.08;
+    letter-spacing: -0.03em;
+    transition: transform 0.4s var(--ease-settle);
+  }
+  .site-menu__blurb {
+    color: var(--muted-on-deep);
+    font-size: var(--text-body);
+    line-height: 1.4;
+    transition: color 0.3s var(--ease-settle);
+  }
+  .site-menu__link:hover,
+  .site-menu__link:focus-visible {
+    background-color: rgba(251, 253, 252, 0.05);
+  }
+  .site-menu__link:hover .site-menu__num,
+  .site-menu__link:focus-visible .site-menu__num {
+    color: var(--gold);
+  }
+  .site-menu__link:hover .site-menu__label,
+  .site-menu__link:focus-visible .site-menu__label {
+    transform: translateX(8px);
+  }
+  .site-menu__link:hover .site-menu__blurb,
+  .site-menu__link:focus-visible .site-menu__blurb {
+    color: var(--on-deep);
+  }
+  .site-menu__link:active .site-menu__label {
+    transform: translateX(4px);
+  }
+  /* the page you're on: butter, with a short butter rule under it */
+  .site-menu__link.on .site-menu__num,
+  .site-menu__link.on .site-menu__label {
+    color: var(--gold);
+  }
+  .site-menu__link.on .site-menu__label::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: -0.1em;
+    width: 1.4em;
+    height: 3px;
+    border-radius: 2px;
+    background: var(--gold);
+  }
+
+  /* Wide screens: he stands at the foot of the column, his robe tucked
+     behind the strip of paper along the bottom of the sheet. */
+  .site-menu__aside {
+    position: relative;
+    z-index: 0;
+    align-self: end;
+    margin-bottom: calc(-1 * var(--space-7) - clamp(28px, 3.5vw, 48px));
+  }
+  .site-menu__come {
+    display: none;
+  }
+  /* Phones: "Come along", the evening Rosary on a butter slip and socials */
+  .site-menu__come {
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+  .site-menu__k {
+    margin: 0;
+    font-size: var(--text-small);
+    font-weight: 600;
+    color: var(--gold);
+  }
+  .site-menu__card {
+    padding: var(--space-4) var(--space-5);
+    border-radius: var(--radius-sm);
+    background: var(--gold);
+    color: var(--ink-on-paper);
+    font-size: var(--text-small);
+    transform: rotate(-1.2deg);
+    box-shadow: 0 10px 18px -10px rgba(0, 0, 0, 0.45);
+  }
+  .site-menu__card p {
+    margin: 0;
+  }
+  .site-menu__what {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: var(--text-body);
+    color: var(--teal-deep);
+  }
+  .site-menu__soc {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+  }
+  .site-menu__soc a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0 var(--space-5);
+    border: 1px solid var(--hair-on-deep);
+    border-radius: var(--radius-pill);
+    font-size: var(--text-small);
+    font-weight: 600;
+    color: var(--on-deep);
+    text-decoration: none;
+    transition: border-color 0.25s;
+  }
+  .site-menu__soc a:hover {
+    border-color: var(--gold);
+  }
+  :global(.site-menu__edge) {
+    position: relative;
+    z-index: 1;
+    flex: 0 0 auto;
+  }
+
+  /* each line is laid down in turn as the sheet drops */
+  .site-menu__list li,
+  .site-menu__aside {
+    opacity: 0;
+    transform: translateY(14px);
+    transition: opacity 0.4s var(--ease-settle), transform 0.5s var(--ease-settle);
+  }
+  .site-header.is-open .site-menu__list li,
+  .site-header.is-open .site-menu__aside {
+    opacity: 1;
+    transform: none;
+    transition-delay: calc(120ms + var(--i) * 40ms);
+  }
+
+  /* while it is open, the header bar turns to the menu's paper */
+  .site-header.is-open {
+    background: var(--teal-deep);
+    /* a backdrop filter would trap the fixed sheet inside the bar */
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    border-bottom-color: var(--hair-on-deep);
+  }
+  .site-header.is-open .wordmark__logo {
+    background: var(--on-deep);
+  }
+  .site-header.is-open .menu-button {
+    color: var(--gold);
+    border-color: var(--gold);
+  }
+  .site-header.is-open .menu-button:hover {
+    background-color: rgba(244, 213, 141, 0.12);
+  }
+  .site-header.is-open .menu-button__open {
+    display: none;
+  }
+  .site-header.is-open .menu-button__close {
+    display: inline;
+  }
+  /* the three bars fold into a cross */
+  .site-header.is-open .menu-button__bars {
+    background-color: transparent;
+  }
+  .site-header.is-open .menu-button__bars::before {
+    transform: translateY(5px) rotate(45deg);
+  }
+  .site-header.is-open .menu-button__bars::after {
+    transform: translateY(-5px) rotate(-45deg);
+  }
+  /* Lock the page under the open menu. body clips rather than hides its
+     sideways overflow (base.css), so it never becomes a scroll box of its
+     own here and the sticky bar stays put. Lenis is paused separately
+     (BaseLayout). */
+  :global(html.menu-open) {
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
+
+  /* Scroll marker for the header's solid state, watched by an
+     IntersectionObserver instead of a scroll listener. */
+  .header-sentinel {
+    position: absolute;
+    top: 24px;
+    left: 0;
+    width: 1px;
+    height: 1px;
+    pointer-events: none;
+  }
+
+  /* ---- tablets and phones: one column, the list then "Come along" ---- */
+  @media (max-width: 60rem) {
+    .wordmark__logo {
+      height: 2.2rem;
+    }
+    .site-menu__in {
+      grid-template-columns: 1fr;
+      align-content: space-between;
+      gap: var(--space-7);
+      padding: var(--space-5) var(--gutter) var(--space-6);
+    }
+    .site-menu__link {
+      grid-template-columns: 2.2ch minmax(0, 1fr);
+      gap: var(--space-4);
+      min-height: 56px;
+      padding: var(--space-3) var(--space-2);
+      margin: 0 calc(-1 * var(--space-2));
+    }
+    .site-menu__label {
+      font-size: clamp(1.9rem, 8.5vw, 2.6rem);
+    }
+    /* phones keep the list to the page names */
+    .site-menu__blurb {
+      display: none;
+    }
+    .site-menu__aside {
+      align-self: auto;
+      margin-bottom: 0;
+    }
+    .site-menu__aside :global(.friend) {
+      display: none;
+    }
+    .site-menu__come {
+      display: flex;
+    }
+    .site-menu__card {
+      align-self: flex-start;
+    }
+  }
+  /* short phones: a tighter list, so "Come along" still fits on screen */
+  @media (max-width: 60rem) and (max-height: 760px) {
+    .site-menu__link {
+      min-height: 46px;
+      padding: var(--space-2);
+    }
+    .site-menu__label {
+      font-size: clamp(1.6rem, 7vw, 2rem);
+    }
+    .site-menu__in {
+      gap: var(--space-5);
+      padding-top: var(--space-3);
+    }
+    .site-menu__card {
+      display: none;
+    }
+  }
+
+  /* short laptops: a tighter list, so the sheet fits without scrolling */
+  @media (min-width: 60.0625rem) and (max-height: 800px) {
+    .site-menu__in {
+      padding-top: var(--space-4);
+    }
+    .site-menu__link {
+      padding-block: 0.35rem;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .site-menu,
+    .site-menu__link,
+    .site-menu__label,
+    .site-menu__list li,
+    .site-menu__aside,
+    .menu-button,
+    .menu-button__bars,
+    .menu-button__bars::before,
+    .menu-button__bars::after {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  const header = document.getElementById('site-header');
+  const sentinel = document.getElementById('header-sentinel');
+  // Solid once the top 24px of the page has scrolled away.
+  if (header && sentinel && 'IntersectionObserver' in window) {
+    new IntersectionObserver(([entry]) => {
+      header.classList.toggle('is-solid', !entry.isIntersecting);
+    }).observe(sentinel);
+  }
+
+  const menuButton = document.getElementById('menu-button');
+  const menuSheet = document.getElementById('site-menu');
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+  let closing = 0;
+  let keepY = 0;
+
+  function setMenu(open: boolean, returnFocus = false) {
+    if (!menuButton || !menuSheet || !header) return;
+    if (open === (menuButton.getAttribute('aria-expanded') === 'true')) return;
+    menuButton.setAttribute('aria-expanded', String(open));
+    if (open) keepY = window.scrollY;
+    document.documentElement.classList.toggle('menu-open', open);
+    document.dispatchEvent(new CustomEvent('acc:scroll-lock', { detail: open }));
+    // locking the page can reset its scroll; put the reader back where they were
+    if (!open) window.scrollTo(0, keepY);
+    window.clearTimeout(closing);
+    if (open) {
+      menuSheet.hidden = false;
+      // let the closed state render once, so the sheet drops in
+      requestAnimationFrame(() =>
+        requestAnimationFrame(() => {
+          header.classList.add('is-open');
+          menuSheet.querySelector<HTMLElement>('.site-menu__link')?.focus({ preventScroll: true });
+        }),
+      );
+      document.addEventListener('keydown', onMenuKey);
+    } else {
+      header.classList.remove('is-open');
+      closing = window.setTimeout(() => (menuSheet.hidden = true), reduce.matches ? 0 : 550);
+      document.removeEventListener('keydown', onMenuKey);
+      if (returnFocus) menuButton.focus();
+    }
+  }
+
+  function onMenuKey(e: KeyboardEvent) {
+    if (e.key === 'Escape') {
+      setMenu(false, true);
+      return;
+    }
+    // keep Tab inside the open menu: the button and the sheet
+    if (e.key !== 'Tab' || !menuButton || !menuSheet) return;
+    // only what is on screen (the phone-only links are hidden on wide screens)
+    const items: HTMLElement[] = [
+      menuButton,
+      ...[...menuSheet.querySelectorAll<HTMLElement>('a')].filter((a) => a.getClientRects().length),
+    ];
+    const first = items[0], last = items[items.length - 1];
+    if (e.shiftKey && document.activeElement === first) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault();
+      first.focus();
+    }
+  }
+
+  // Coming back through the back/forward cache: start closed.
+  window.addEventListener('pageshow', (e) => {
+    if (e.persisted) setMenu(false);
+  });
+
+  menuButton?.addEventListener('click', () => {
+    setMenu(menuButton.getAttribute('aria-expanded') !== 'true');
+  });
+  // Choosing a page closes the menu (matters for same-page and back/forward
+  // cache navigations, where the page isn't rebuilt).
+  menuSheet?.addEventListener('click', (e) => {
+    if ((e.target as HTMLElement).closest('a')) setMenu(false);
+  });
+</script>

@@ -1,0 +1,14 @@
+---
+// A visible "[NEEDS ...]" marker for content ACC hasn't supplied yet.
+// Shown in `astro dev` only. Production builds render nothing, so visitors
+// never see a dev note. Set PUBLIC_SHOW_NEEDS=true to show them in a review
+// build. The full list of gaps lives in docs/CONTENT_NEEDED.md.
+interface Props {
+  class?: string;
+  as?: 'span' | 'p';
+}
+const { class: className, as: Tag = 'span' } = Astro.props as Props;
+const show = import.meta.env.DEV || import.meta.env.PUBLIC_SHOW_NEEDS === 'true';
+---
+
+{show && <Tag class:list={['needs', className]}><slot /></Tag>}

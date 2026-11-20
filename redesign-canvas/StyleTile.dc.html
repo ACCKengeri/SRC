@@ -1,0 +1,201 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300..800&family=Schibsted+Grotesk:wght@400..700&family=Fraunces:ital,opsz,wght@0,9..144,300..500;1,9..144,300..500&display=swap');
+    :root{
+      --paper:#F6F4EF; --ink:#141210; --blue:#1E51F7; --blue-link:#1B3FC9;
+      --blue-wash:#E7ECFB; --magenta:#BB4198; --muted:#5C5A55;
+      --hair:#D8D5CC; --hair-ink:#2E2B27;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--paper);color:var(--ink);
+      font-family:'Schibsted Grotesk','Helvetica Neue',Arial,sans-serif;font-size:16px;line-height:1.5;
+      -webkit-font-smoothing:antialiased}
+    .disp{font-family:'Bricolage Grotesque','Arial Narrow',Arial,sans-serif;font-weight:600;line-height:1.0;
+      letter-spacing:-0.02em;margin:0}
+    .serif{font-family:'Fraunces',Georgia,serif;font-weight:340}
+    a{color:var(--blue-link);text-decoration:none} a:hover{color:var(--blue)}
+    h2.sec{font-family:'Bricolage Grotesque',Arial,sans-serif;font-weight:500;font-size:15px;
+      letter-spacing:0.03em;text-transform:lowercase;color:var(--muted);margin:0 0 22px}
+    .wrap{padding:72px 80px 96px;max-width:1440px}
+    .row{display:flex;flex-wrap:wrap;gap:20px}
+    .grid{display:grid;gap:20px}
+    .sw{width:184px;border:1px solid var(--hair);border-radius:4px;overflow:hidden;background:#fff}
+    .sw__c{height:96px;position:relative} .sw__c em{position:absolute;left:10px;bottom:8px;font-style:normal;
+      font-family:'Bricolage Grotesque',monospace;font-size:11px;background:rgba(255,255,255,0.9);padding:2px 6px;border-radius:2px}
+    .sw__m{padding:10px 12px;font-size:12.5px}
+    .sw__m b{display:block;font-family:'Bricolage Grotesque',monospace;font-weight:600;letter-spacing:0.02em}
+    .sw__m span{color:var(--muted)}
+    .btn{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:14px 28px;
+      background:var(--ink);color:var(--paper);font-weight:600;font-size:15px;border:0;border-radius:2px;cursor:pointer}
+    .btn--ghost{background:transparent;color:var(--ink);border:1px solid var(--ink)}
+    .btn--link{background:none;border:0;color:var(--blue-link);padding:14px 0;min-height:48px;
+      font-weight:600;border-bottom:2px solid var(--blue-link)}
+    .field{max-width:420px}
+    .field label{display:block;font-size:13px;color:var(--muted);margin-bottom:8px}
+    .field input,.field .sel{width:100%;height:52px;border:1px solid var(--ink);background:#fff;
+      padding:0 16px;font:inherit;color:var(--ink);border-radius:2px;display:flex;align-items:center}
+    .field .sel{justify-content:space-between}
+    .foc{outline:none;box-shadow:0 0 0 2px var(--paper),0 0 0 4px var(--blue)}
+    .acc-item{border-top:1px solid var(--hair)}
+    .acc-hd{display:flex;justify-content:space-between;align-items:baseline;padding:22px 0;gap:24px}
+    .acc-hd .n{font-family:'Bricolage Grotesque',Arial,sans-serif;font-weight:600;font-size:26px;letter-spacing:-0.01em}
+    .acc-hd .t{color:var(--muted);font-size:14px}
+    .acc-open{border-left:2px solid var(--blue);padding:4px 0 26px 22px;margin-left:-1px}
+    .acc-open p{max-width:60ch;color:#2a2622;margin:0 0 18px}
+    .lg{list-style:none;padding:0;margin:0 0 20px;display:grid;gap:12px;max-width:64ch}
+    .lg b{font-family:'Bricolage Grotesque',Arial,sans-serif;font-weight:600}
+    .lg span{color:var(--muted)}
+    .needs{display:inline-block;border:1px dashed var(--muted);color:var(--muted);font-size:12px;
+      padding:3px 9px;border-radius:3px}
+    .card{border:1px solid var(--hair);border-radius:4px;padding:22px;background:#fff}
+    .mono{font-family:'Bricolage Grotesque',monospace}
+    .note{color:var(--muted);font-size:13px;max-width:66ch;margin:14px 0 0}
+    .divider{height:1px;background:var(--hair);margin:60px 0}
+  </style>
+</helmet>
+<div class="wrap">
+
+  <p class="disp" style="font-size:15px;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted)">Association of Christian Christites</p>
+  <h1 class="disp" style="font-size:64px;margin:14px 0 6px">Design system</h1>
+  <p class="note" style="font-size:15px">The visual language for the redesign — an editorial studio idiom, light-only, one electric-blue accent used sparingly. Modelled on madeinmay.studio; built entirely on ACC's own content and photography.</p>
+
+  <div class="divider"></div>
+
+  <h2 class="sec">Colour</h2>
+  <div class="row">
+    <div class="sw"><div class="sw__c" style="background:#F6F4EF"></div><div class="sw__m"><b>paper · #F6F4EF</b><span>the ground. warmed off-white</span></div></div>
+    <div class="sw"><div class="sw__c" style="background:#141210"><em>16.9:1 on paper</em></div><div class="sw__m"><b style="color:#141210">ink · #141210</b><span>text, footer, scripture, dark panels</span></div></div>
+    <div class="sw"><div class="sw__c" style="background:#1E51F7"><em style="color:#fff;background:rgba(20,18,16,0.35)">4.8:1 on paper</em></div><div class="sw__m"><b>blue · #1E51F7</b><span>the accent — links, focus, signature, today. large text / UI only</span></div></div>
+    <div class="sw"><div class="sw__c" style="background:#1B3FC9"><em style="color:#fff;background:rgba(20,18,16,0.35)">7.9:1 on paper</em></div><div class="sw__m"><b>blue-link · #1B3FC9</b><span>small link text on paper</span></div></div>
+    <div class="sw"><div class="sw__c" style="background:#9DB2FF"><em>5.1:1 on ink</em></div><div class="sw__m"><b>blue-on-ink · #9DB2FF</b><span>small link / label text on the dark panels</span></div></div>
+    <div class="sw"><div class="sw__c" style="background:#E7ECFB"></div><div class="sw__m"><b>blue-wash · #E7ECFB</b><span>tint blocks, tags, hover fills</span></div></div>
+    <div class="sw"><div class="sw__c" style="background:#BB4198"></div><div class="sw__m"><b>magenta · #BB4198</b><span>held back — Lent and Advent carry a faint tint on the calendar</span></div></div>
+    <div class="sw"><div class="sw__c" style="background:#5C5A55"><em style="color:#fff;background:rgba(20,18,16,0.35)">6.5:1 on paper</em></div><div class="sw__m"><b>muted · #5C5A55</b><span>secondary text</span></div></div>
+    <div class="sw"><div class="sw__c" style="background:#D8D5CC"></div><div class="sw__m"><b>hairline · #D8D5CC</b><span>rules, dividers, field borders</span></div></div>
+  </div>
+  <p class="note"><b>Discipline:</b> primary buttons are ink-on-paper (~16:1, always safe), never blue-filled. Blue stays large / UI-boundary. The old ACC orange #FF6F00 is dropped entirely. Every #1E51F7 pairing is re-checked in a contrast tool before it ships.</p>
+
+  <div class="divider"></div>
+
+  <h2 class="sec">Type</h2>
+  <div class="grid" style="gap:34px;max-width:1100px">
+    <div>
+      <p class="note" style="margin:0 0 10px">Display — <b>Bricolage Grotesque</b> on the canvas · <b>Clash Display</b> (Fontshare, self-hosted, subset) in production</p>
+      <p class="disp" style="font-size:88px;letter-spacing:-0.035em;line-height:0.95">Faith, fellowship<br>&amp; purpose</p>
+    </div>
+    <div class="row" style="gap:48px;align-items:flex-end">
+      <p class="disp" style="font-size:56px;margin:0">Six domains</p>
+      <p class="disp" style="font-size:36px;margin:0">Section heading</p>
+      <p class="disp" style="font-size:15px;letter-spacing:0.03em;color:var(--muted);text-transform:lowercase;margin:0 0 6px">section label — lowercase, wide, quiet</p>
+    </div>
+    <div class="row" style="gap:56px">
+      <div style="max-width:440px">
+        <p class="note" style="margin:0 0 8px">Text / UI — <b>Schibsted Grotesk</b></p>
+        <p style="margin:0">The Association of Christian Christites is a thriving community at Christ (Deemed to Be University), uniting over 5,000 Christian students.</p>
+      </div>
+      <div style="max-width:440px">
+        <p class="note" style="margin:0 0 8px">Reading — <b>Fraunces</b>, scoped to Prayers &amp; scripture only</p>
+        <p class="serif" style="margin:0;font-size:19px;line-height:1.6">Our Father, who art in heaven, hallowed be thy name; thy kingdom come, thy will be done.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <h2 class="sec">Controls</h2>
+  <div class="row" style="gap:18px;align-items:center">
+    <button class="btn">Join the team</button>
+    <button class="btn--ghost btn">Explore the domain</button>
+    <a class="btn--link" href="#">See the full calendar</a>
+    <button class="btn foc">Focus ring</button>
+  </div>
+  <div class="row" style="gap:32px;margin-top:32px">
+    <div class="field">
+      <label>Your Christ email</label>
+      <input class="foc" value="you@christuniversity.in" readonly>
+    </div>
+    <div class="field">
+      <label>This is…</label>
+      <div class="sel">A prayer request
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+      </div>
+    </div>
+  </div>
+  <p class="note">Nothing renders as a browser default — the select, the focus ring, the scrollbar and the map are all drawn.</p>
+
+  <div class="divider"></div>
+
+  <h2 class="sec">Accordion — the domains / prayers pattern</h2>
+  <div style="max-width:860px">
+    <div class="acc-item"><div class="acc-hd"><span class="n">Animation</span><span class="t">Animating Faith: Inspiring Stories</span></div></div>
+    <div class="acc-item">
+      <div class="acc-hd"><span class="n">Liturgy</span><span class="t">Behind the scenes, building up worship.</span></div>
+      <div class="acc-open">
+        <p>The Liturgy Team is the backbone of ACC, orchestrating sacred ceremonies and guiding through spiritual rituals with reverence and care — from coordinating prayers and leading intercessory sessions to organising Holy Mass.</p>
+        <ul class="lg">
+          <li><b>Facilitating Spiritual Growth</b> — <span>guidance and support during religious ceremonies, an environment to deepen spiritual connections.</span></li>
+          <li><b>Promoting Unity</b> — <span>organising communal worship and care that strengthens bonds within the community.</span></li>
+          <li><b>Emotional Support</b> — <span>actively listening, offering guidance during personal struggles.</span></li>
+        </ul>
+        <div class="row" style="gap:16px;align-items:center">
+          <button class="btn">Join Liturgy</button>
+          <span class="needs">NEEDS COPY: hours per week</span>
+        </div>
+      </div>
+    </div>
+    <div class="acc-item"><div class="acc-hd"><span class="n">Outreach</span><span class="t">Touching Hearts, Changing Lives</span></div></div>
+    <div class="acc-item" style="border-bottom:1px solid var(--hair)"><div class="acc-hd"><span class="n">Audio &amp; Visual</span><span class="t">Where faith finds its voice.</span></div></div>
+  </div>
+  <p class="note">Peers, not a sequence — no 01 / 02 / 03. The blue left-rule marks the open panel.</p>
+
+  <div class="divider"></div>
+
+  <h2 class="sec">The signature — "ACC" wordmark dissolve</h2>
+  <div class="card" style="max-width:860px;background:var(--paper);border-color:var(--hair)">
+    <svg viewBox="0 0 760 260" width="100%" style="display:block">
+      <defs>
+        <filter id="goo"><feGaussianBlur in="SourceGraphic" stdDeviation="9" result="b"/>
+          <feColorMatrix in="b" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 19 -8"/></filter>
+      </defs>
+      <g filter="url(#goo)" fill="#1E51F7">
+        <text x="380" y="188" text-anchor="middle" font-family="Bricolage Grotesque, Arial" font-weight="800" font-size="210" letter-spacing="-6">ACC</text>
+        <circle cx="150" cy="150" r="30"/><circle cx="235" cy="196" r="20"/>
+        <circle cx="560" cy="90" r="24"/><circle cx="620" cy="150" r="34"/>
+      </g>
+    </svg>
+    <p class="note" style="margin-top:8px">Set in the display face under an SVG gooey filter (feGaussianBlur → feColorMatrix), the letters melt and reform on a slow ~8s loop as the divider between the welcome text and the domains. Freezes to a single static "ACC" under <span class="mono">prefers-reduced-motion</span>. ~1.5 KB inline, no JS library.</p>
+  </div>
+
+  <div class="divider"></div>
+
+  <h2 class="sec">Motion legend</h2>
+  <ul class="lg" style="max-width:70ch">
+    <li><b>Smooth / inertia scroll</b> — <span>Lenis (~4 KB), deferred. Off under reduced-motion and on touch.</span></li>
+    <li><b>Heading &amp; line reveals</b> — <span>build-time word-spans + IntersectionObserver + CSS stagger, fire once. No-JS fallback shows the final state.</span></li>
+    <li><b>Image hover</b> — <span>CSS only: resting desaturate + ink scrim → scrim lifts, colour restores, 1.02 scale, 320ms.</span></li>
+    <li><b>Footer hairlines</b> — <span>draw in left-to-right on scroll.</span></li>
+  </ul>
+  <p class="note">Budget: &lt; 7 KB gzipped of client JS, all deferred and gated. No GSAP, no Lottie, no WebGL.</p>
+
+  <div class="divider"></div>
+
+  <h2 class="sec">404</h2>
+  <div class="card" style="max-width:860px;padding:48px">
+    <p class="disp" style="font-size:13px;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted);margin:0 0 14px">404</p>
+    <p class="disp" style="font-size:44px;margin:0 0 16px;letter-spacing:-0.02em">We couldn't find that page.</p>
+    <p style="max-width:52ch;color:#2a2622;margin:0 0 22px">The link might be old, or the address mistyped. Either way, you haven't lost your place — here's where to go next.</p>
+    <a class="btn--link" href="#">Back to Home</a>
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>

@@ -1,0 +1,510 @@
+---
+/*
+  The open menu's companion on wide screens: a friendly cut-paper Jesus who
+  watches the pointer (or the link that has keyboard focus), waves hello when
+  the menu opens, and smiles when you come to him.
+
+  Built from the same stacked paper as the rest of the site: each piece (halo,
+  hair, robe, mantle, face) is its own sheet with a hard offset shadow, and as
+  he turns to look the pieces shift by different amounts, so the head reads as
+  layered card turning in depth. Nothing runs while the menu is closed; under
+  reduced motion only the eyes follow, without easing, and he does not wave.
+*/
+---
+
+<div class="friend" id="menu-friend" aria-hidden="true">
+  <p class="friend__say">
+    <span class="friend__words">Peace be with you.</span>
+    <span class="friend__ref">John 20:19</span>
+  </p>
+  <svg class="friend__art" viewBox="0 0 300 380" focusable="false">
+    <g class="f-l f-halo" data-k="0.35">
+      <circle cx="150" cy="128" r="98" class="f-halo__disc"></circle>
+      <circle cx="150" cy="128" r="84" class="f-halo__ring"></circle>
+    </g>
+
+    <g class="f-l f-hairback" data-k="0.7" data-turn>
+      <path
+        d="M98,126 C90,170 92,206 82,238 C98,250 120,250 134,238 L166,238 C180,250 202,250 218,238 C208,206 210,170 202,126 Z"
+      ></path>
+    </g>
+
+    <!-- his right hand, raised in greeting; waves from the elbow -->
+    <g class="f-l f-arm" data-k="0.2">
+      <g class="f-arm__swing">
+        <g class="f-hand">
+          <rect x="52" y="172" width="38" height="54" rx="17"></rect>
+          <ellipse cx="91" cy="210" rx="7.5" ry="13" transform="rotate(-28 91 210)"></ellipse>
+          <path class="f-hand__lines" d="M62,180 L62,196 M71,177 L71,196 M80,179 L80,196"></path>
+        </g>
+        <path class="f-sleeve" d="M44,236 C52,226 74,222 98,226 L106,336 L58,346 Z"></path>
+      </g>
+    </g>
+
+    <g class="f-l f-neck" data-k="0.6">
+      <path d="M133,186 L133,240 Q150,250 167,240 L167,186 Z"></path>
+    </g>
+
+    <g class="f-l f-robe" data-k="0.2">
+      <path
+        class="f-robe__body"
+        d="M16,380 C20,322 48,282 94,264 C110,256 124,248 133,238 Q150,252 167,238 C176,248 190,256 206,264 C252,282 280,322 284,380 Z"
+      ></path>
+      <path class="f-robe__line" d="M133,240 Q150,258 167,240 M84,300 C80,330 78,356 80,380"></path>
+    </g>
+
+    <g class="f-l f-mantle" data-k="0.25">
+      <path
+        class="f-mantle__cloth"
+        d="M168,240 C196,246 232,262 254,292 C270,318 280,350 284,380 L114,380 C138,338 160,290 168,240 Z"
+      ></path>
+      <path class="f-mantle__fold" d="M200,262 C190,300 174,340 160,380 M236,290 C230,320 222,352 218,380"></path>
+    </g>
+
+    <g class="f-l f-head" data-k="1" data-turn>
+      <circle cx="104" cy="148" r="10" class="f-skin"></circle>
+      <circle cx="196" cy="148" r="10" class="f-skin"></circle>
+      <ellipse cx="150" cy="142" rx="46" ry="54" class="f-skin"></ellipse>
+      <circle cx="123" cy="161" r="8" class="f-cheek"></circle>
+      <circle cx="177" cy="161" r="8" class="f-cheek"></circle>
+      <path
+        class="f-beard"
+        d="M104,146 C104,198 126,226 150,228 C174,226 196,198 196,146 C190,166 178,178 164,176 C158,174 142,174 136,176 C122,178 110,166 104,146 Z"
+      ></path>
+    </g>
+
+    <g class="f-l f-face" data-k="1.3" data-turn>
+      <path class="f-mouth" d="M139,186 Q150,197 161,186 Q150,191 139,186 Z"></path>
+      <path
+        class="f-stache"
+        d="M129,178 C137,169 146,171 150,175 C154,171 163,169 171,178 C163,182 156,181 150,179 C144,181 137,182 129,178 Z"
+      ></path>
+      <path class="f-nose" d="M150,146 C147,156 146,162 153,163"></path>
+      <g class="f-eyes">
+        <g class="f-eye">
+          <ellipse cx="132" cy="140" rx="9.5" ry="10.5" class="f-white"></ellipse>
+          <g class="f-pupil">
+            <circle cx="132" cy="141" r="5.2"></circle>
+            <circle cx="134" cy="139" r="1.7" class="f-glint"></circle>
+          </g>
+        </g>
+        <g class="f-eye">
+          <ellipse cx="168" cy="140" rx="9.5" ry="10.5" class="f-white"></ellipse>
+          <g class="f-pupil">
+            <circle cx="168" cy="141" r="5.2"></circle>
+            <circle cx="170" cy="139" r="1.7" class="f-glint"></circle>
+          </g>
+        </g>
+      </g>
+      <path class="f-happy" d="M122,143 Q132,131 142,143 M158,143 Q168,131 178,143"></path>
+      <path class="f-brow" d="M121,124 Q132,118 143,122 M157,122 Q168,118 179,124"></path>
+    </g>
+
+    <g class="f-l f-hairfront" data-k="1.1" data-turn>
+      <path
+        d="M99,152 C92,98 118,77 150,79 C182,77 208,98 201,152 C197,126 187,110 170,102 C162,98 155,93 150,87 C145,93 138,98 130,102 C113,110 103,126 99,152 Z"
+      ></path>
+      <path class="f-strand" d="M150,90 C138,96 124,104 114,118 M150,90 C162,96 176,104 186,118"></path>
+    </g>
+  </svg>
+</div>
+
+<style>
+  .friend {
+    --skin: #c58b63;
+    --skin-shade: #a5704c;
+    --hair: #4a2d1e;
+    --hair-hi: #6d4632;
+    --beard: #573626;
+    --lip: #eba48e;
+    --mantle-shade: #d4553f;
+    --cut: rgba(2, 22, 24, 0.42);
+    position: relative;
+    display: flex;
+    justify-content: center;
+  }
+
+  .friend__art {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-height: calc(100dvh - var(--header-h) - 13rem);
+    overflow: visible;
+    cursor: default;
+  }
+
+  /* each piece is a cut sheet with a hard offset shadow */
+  .f-l {
+    transform-box: view-box;
+    transform-origin: 150px 215px;
+    filter: drop-shadow(0 3px 0 var(--cut));
+  }
+  .f-halo {
+    filter: none;
+  }
+  .f-halo__disc {
+    fill: var(--gold);
+  }
+  .f-halo__ring {
+    fill: none;
+    stroke: rgba(255, 255, 255, 0.4);
+    stroke-width: 2;
+    stroke-dasharray: 3 7;
+    stroke-linecap: round;
+  }
+  .f-hairback path,
+  .f-hairfront path:first-child {
+    fill: var(--hair);
+  }
+  .f-strand {
+    fill: none;
+    stroke: var(--hair-hi);
+    stroke-width: 2.5;
+    stroke-linecap: round;
+  }
+  .f-skin,
+  .f-hand rect,
+  .f-hand ellipse {
+    fill: var(--skin);
+  }
+  .f-neck path {
+    fill: var(--skin-shade);
+  }
+  .f-hand__lines,
+  .f-nose {
+    fill: none;
+    stroke: var(--skin-shade);
+    stroke-width: 2.5;
+    stroke-linecap: round;
+  }
+  .f-sleeve {
+    fill: var(--raised);
+  }
+  .f-robe__body {
+    fill: var(--sheet);
+  }
+  .f-robe__line {
+    fill: none;
+    stroke: var(--raised);
+    stroke-width: 3;
+    stroke-linecap: round;
+  }
+  .f-mantle__cloth {
+    fill: var(--coral);
+  }
+  .f-mantle__fold {
+    fill: none;
+    stroke: var(--mantle-shade);
+    stroke-width: 3;
+    stroke-linecap: round;
+  }
+  .f-cheek {
+    fill: var(--peach);
+    opacity: 0.7;
+  }
+  .f-beard {
+    fill: var(--beard);
+  }
+  .f-stache {
+    fill: var(--hair);
+  }
+  .f-mouth {
+    fill: var(--lip);
+  }
+  .f-face {
+    filter: none;
+  }
+  .f-white {
+    fill: var(--sheet);
+  }
+  .f-pupil circle {
+    fill: var(--ink);
+  }
+  .f-pupil .f-glint {
+    fill: var(--sheet);
+  }
+  .f-brow,
+  .f-happy {
+    fill: none;
+    stroke: var(--hair);
+    stroke-width: 4;
+    stroke-linecap: round;
+  }
+  .f-happy {
+    stroke: var(--ink);
+    stroke-width: 3.5;
+    opacity: 0;
+  }
+
+  /* blinking: the eyes close for a moment */
+  .f-eyes {
+    transform-box: view-box;
+    transform-origin: 150px 140px;
+    transition: transform 0.07s ease-in;
+  }
+  .friend.is-blink .f-eyes {
+    transform: scaleY(0.08);
+  }
+  /* come to him and he smiles with his eyes */
+  .friend.is-happy .f-eyes {
+    opacity: 0;
+  }
+  .friend.is-happy .f-happy {
+    opacity: 1;
+  }
+  .friend.is-happy .f-brow {
+    transform: translateY(-2px);
+  }
+
+  /* the wave, from the elbow */
+  .f-arm__swing {
+    transform-box: view-box;
+    transform-origin: 80px 330px;
+  }
+  .friend.is-waving .f-arm__swing {
+    animation: f-wave 1.3s var(--ease-settle);
+  }
+  @keyframes f-wave {
+    0%,
+    100% {
+      transform: rotate(0deg);
+    }
+    18% {
+      transform: rotate(-11deg);
+    }
+    40% {
+      transform: rotate(7deg);
+    }
+    62% {
+      transform: rotate(-9deg);
+    }
+    82% {
+      transform: rotate(4deg);
+    }
+  }
+
+  /* what he says, on a slip of paper */
+  .friend__say {
+    position: absolute;
+    z-index: 1;
+    top: 4%;
+    right: -0.25rem;
+    margin: 0;
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius-sm);
+    background: var(--sheet);
+    color: var(--ink-strong);
+    box-shadow: 0 3px 0 var(--cut);
+    transform: rotate(2deg) scale(0.6);
+    transform-origin: 15% 100%;
+    opacity: 0;
+    transition: opacity 0.3s var(--ease-settle), transform 0.5s var(--ease-settle);
+  }
+  .friend__say::after {
+    content: '';
+    position: absolute;
+    left: 1.1rem;
+    bottom: -9px;
+    width: 18px;
+    height: 12px;
+    background: var(--sheet);
+    clip-path: polygon(0 0, 100% 0, 10% 100%);
+  }
+  .friend.is-saying .friend__say {
+    opacity: 1;
+    transform: rotate(2deg);
+  }
+  .friend__words {
+    display: block;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: var(--text-body);
+    line-height: 1.2;
+  }
+  .friend__ref {
+    display: block;
+    margin-top: 2px;
+    font-size: var(--text-micro);
+    font-weight: 600;
+    color: var(--coral-text);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .f-eyes,
+    .friend__say {
+      transition: none;
+    }
+    .friend.is-waving .f-arm__swing {
+      animation: none;
+    }
+  }
+</style>
+
+<script>
+  const friend = document.getElementById('menu-friend');
+  const sheet = document.getElementById('site-menu');
+  const art = friend?.querySelector<SVGSVGElement>('.friend__art');
+
+  if (friend && sheet && art) {
+    const wide = window.matchMedia('(min-width: 60.0625rem)');
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const layers = [...friend.querySelectorAll<SVGGElement>('.f-l')].map((el) => ({
+      el,
+      k: Number(el.dataset.k || 0),
+      turn: el.hasAttribute('data-turn'),
+    }));
+    const pupils = [...friend.querySelectorAll<SVGGElement>('.f-pupil')];
+    const EYE = { x: 150, y: 140 }; // between the eyes, in the drawing's units
+    const VB_W = 300, VB_H = 380;
+
+    // where he is looking (target) and where he has got to (now):
+    // x, y are a head shift in drawing units, r a tilt, px, py the pupils
+    const target = { x: 0, y: 0, r: 0, px: 0, py: 0 };
+    const now = { ...target };
+    let frame = 0;
+    let open = false;
+    let blinkTimer = 0;
+    let homeTimer = 0;
+    const timers: number[] = [];
+
+    // turn a point on screen into where he should look
+    function lookAt(cx: number, cy: number) {
+      const box = art!.getBoundingClientRect();
+      if (!box.height) return;
+      // screen px per drawing unit (the drawing is fitted, centred, in its box)
+      const unit = Math.min(box.width / VB_W, box.height / VB_H);
+      const ex = box.left + (box.width - VB_W * unit) / 2 + EYE.x * unit;
+      const ey = box.top + (box.height - VB_H * unit) / 2 + EYE.y * unit;
+      const dx = cx - ex, dy = cy - ey;
+      const d = Math.hypot(dx, dy) || 1;
+      const reach = Math.min(1, d / 420); // far things turn the head fully
+      const near = Math.min(1, d / 60); // pupils centre on things right in front
+      target.px = (dx / d) * 3.6 * near;
+      target.py = (dy / d) * 3.4 * near;
+      target.x = (dx / d) * 10 * reach;
+      target.y = (dy / d) * 6 * reach;
+      target.r = reduce.matches ? 0 : Math.max(-1, Math.min(1, dx / 700)) * 7;
+      if (reduce.matches) {
+        target.x = target.y = 0;
+      }
+      kick();
+    }
+
+    function lookHome() {
+      target.x = target.y = target.r = target.px = target.py = 0;
+      kick();
+    }
+
+    function kick() {
+      if (!frame) frame = requestAnimationFrame(step);
+    }
+
+    function step() {
+      frame = 0;
+      const ease = reduce.matches ? 1 : 0.16;
+      let moving = false;
+      for (const key of ['x', 'y', 'r', 'px', 'py'] as const) {
+        const gap = target[key] - now[key];
+        now[key] += gap * ease;
+        if (Math.abs(gap) > 0.02) moving = true;
+        else now[key] = target[key];
+      }
+      for (const l of layers) {
+        const rot = l.turn ? now.r : 0;
+        l.el.style.transform = `translate(${(now.x * l.k).toFixed(2)}px, ${(now.y * l.k).toFixed(2)}px) rotate(${rot.toFixed(2)}deg)`;
+      }
+      for (const p of pupils) {
+        p.style.transform = `translate(${now.px.toFixed(2)}px, ${now.py.toFixed(2)}px)`;
+      }
+      if (moving) kick();
+    }
+
+    function later(fn: () => void, ms: number) {
+      timers.push(window.setTimeout(fn, ms));
+    }
+
+    function blinkSoon() {
+      window.clearTimeout(blinkTimer);
+      blinkTimer = window.setTimeout(() => {
+        friend!.classList.add('is-blink');
+        window.setTimeout(() => friend!.classList.remove('is-blink'), 130);
+        blinkSoon();
+      }, 2400 + Math.random() * 3600);
+    }
+
+    function wave() {
+      if (reduce.matches) return;
+      friend!.classList.remove('is-waving');
+      void friend!.getBoundingClientRect();
+      friend!.classList.add('is-waving');
+    }
+
+    const onMove = (e: PointerEvent) => {
+      window.clearTimeout(homeTimer);
+      lookAt(e.clientX, e.clientY);
+    };
+    const onLeave = () => {
+      window.clearTimeout(homeTimer);
+      homeTimer = window.setTimeout(lookHome, 900);
+    };
+    // keyboard: he looks at the link that has focus
+    const onFocus = (e: FocusEvent) => {
+      const a = (e.target as HTMLElement).closest('a');
+      if (!a) return;
+      const r = (a.querySelector('.site-menu__label') || a).getBoundingClientRect();
+      lookAt(r.left + r.width / 2, r.top + r.height / 2);
+    };
+    const onEnterHim = () => {
+      friend!.classList.add('is-happy');
+      wave();
+    };
+    const onLeaveHim = () => friend!.classList.remove('is-happy');
+
+    function start() {
+      if (open || !wide.matches) return;
+      open = true;
+      sheet!.addEventListener('pointermove', onMove);
+      sheet!.addEventListener('pointerdown', onMove);
+      sheet!.addEventListener('pointerleave', onLeave);
+      sheet!.addEventListener('focusin', onFocus);
+      art!.addEventListener('pointerenter', onEnterHim);
+      art!.addEventListener('pointerleave', onLeaveHim);
+      // once the sheet has dropped: hello
+      later(() => {
+        friend!.classList.add('is-saying');
+        wave();
+      }, reduce.matches ? 0 : 650);
+      if (!reduce.matches) blinkSoon();
+    }
+
+    function stop() {
+      if (!open) return;
+      open = false;
+      sheet!.removeEventListener('pointermove', onMove);
+      sheet!.removeEventListener('pointerdown', onMove);
+      sheet!.removeEventListener('pointerleave', onLeave);
+      sheet!.removeEventListener('focusin', onFocus);
+      art!.removeEventListener('pointerenter', onEnterHim);
+      art!.removeEventListener('pointerleave', onLeaveHim);
+      timers.splice(0).forEach((t) => window.clearTimeout(t));
+      window.clearTimeout(blinkTimer);
+      window.clearTimeout(homeTimer);
+      cancelAnimationFrame(frame);
+      frame = 0;
+      friend!.classList.remove('is-saying', 'is-waving', 'is-happy', 'is-blink');
+      Object.assign(target, { x: 0, y: 0, r: 0, px: 0, py: 0 });
+      Object.assign(now, target);
+      step();
+    }
+
+    // the header announces the menu opening and closing
+    document.addEventListener('acc:scroll-lock', (e) => {
+      if ((e as CustomEvent<boolean>).detail) start();
+      else stop();
+    });
+    wide.addEventListener('change', () => {
+      if (!wide.matches) stop();
+      else if (document.documentElement.classList.contains('menu-open')) start();
+    });
+  }
+</script>

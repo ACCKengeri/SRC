@@ -1,0 +1,159 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300..800&family=Schibsted+Grotesk:wght@400..700&family=Fraunces:ital,opsz,wght@0,9..144,300..500;1,9..144,300..500&display=swap');
+    :root{--paper:#F6F4EF;--ink:#141210;--blue:#1E51F7;--blue-link:#1B3FC9;--blue-wash:#E7ECFB;--muted:#5C5A55;--hair:#D8D5CC}
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--paper);color:var(--ink);font-family:'Schibsted Grotesk',Arial,sans-serif;
+      font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased}
+    .disp{font-family:'Bricolage Grotesque',Arial,sans-serif;font-weight:600;line-height:1.0;letter-spacing:-0.025em;margin:0}
+    .serif{font-family:'Fraunces',Georgia,serif;font-weight:330}
+    p{margin:0} a{color:inherit;text-decoration:none}
+    .label{font-family:'Bricolage Grotesque',Arial,sans-serif;font-weight:500;font-size:14px;letter-spacing:0.03em;color:var(--muted);text-transform:lowercase}
+
+    .hdr{display:flex;align-items:center;justify-content:space-between;padding:26px 72px;border-bottom:1px solid var(--hair);
+      position:sticky;top:0;background:rgba(246,244,239,0.92);backdrop-filter:blur(8px);z-index:5}
+    .hdr b{font-family:'Bricolage Grotesque',Arial,sans-serif;font-weight:700;font-size:19px;display:flex;align-items:center;gap:12px}
+    .hdr .dot{width:22px;height:22px;border:2px solid currentColor;border-radius:50%}
+    .hdr nav{display:flex;gap:28px;font-size:15px;font-weight:500}
+    .hdr nav a.on{color:var(--blue-link)}
+    .hdr .soc{display:flex;gap:16px;font-size:14px;color:var(--muted)}
+    .hdr .soc a:hover{color:var(--blue-link)}
+
+    .head{padding:110px 72px 30px;max-width:1240px;margin:0 auto}
+    .head h1{font-size:104px;letter-spacing:-0.04em;line-height:0.94}
+    .head .verse{margin-top:26px;font-family:'Fraunces',Georgia,serif;font-style:italic;font-weight:320;font-size:24px;
+      max-width:34ch;color:#2a2622}
+    .head .verse span{display:block;font-style:normal;font-size:14px;color:var(--muted);margin-top:8px;font-family:'Schibsted Grotesk',Arial,sans-serif}
+    .head p.intro{margin-top:22px;max-width:52ch;color:#33302c;font-size:17px}
+
+    .split{max-width:1240px;margin:0 auto;padding:60px 72px 40px;display:grid;grid-template-columns:1.3fr 1fr;gap:64px;align-items:start}
+
+    .form .fld{margin-bottom:28px}
+    .form label{display:block;font-size:13px;color:var(--muted);margin-bottom:9px;font-weight:500}
+    .form input,.form textarea,.form .sel{width:100%;border:1px solid var(--ink);background:#fff;
+      padding:15px 16px;font:inherit;color:var(--ink);border-radius:2px}
+    .form input:focus,.form textarea:focus{outline:none;box-shadow:0 0 0 2px var(--paper),0 0 0 4px var(--blue)}
+    .form textarea{min-height:140px;resize:vertical}
+    .form .sel{display:flex;justify-content:space-between;align-items:center;cursor:pointer}
+    .form .err{margin-top:8px;font-size:13px;color:var(--ink);display:flex;gap:7px;align-items:flex-start}
+    .form .err::before{content:"!";flex:0 0 auto;width:16px;height:16px;border-radius:50%;background:var(--ink);
+      color:var(--paper);font-weight:700;font-size:11px;display:flex;align-items:center;justify-content:center;margin-top:1px}
+    .form .check{display:flex;gap:12px;align-items:flex-start;margin-top:6px}
+    .form .check .box{width:22px;height:22px;border:1px solid var(--ink);border-radius:2px;flex:0 0 auto;margin-top:2px}
+    .form .check .box.on{background:var(--ink)}
+    .form .check p{font-size:14px;color:#33302c}
+    .form .check .n{margin-top:8px;border:1px dashed var(--muted);color:var(--muted);font-size:12px;padding:3px 9px;border-radius:3px;display:inline-block}
+    .btn{display:inline-flex;align-items:center;min-height:52px;padding:15px 34px;background:var(--ink);color:var(--paper);
+      font-weight:600;font-size:15px;border:0;border-radius:2px;cursor:pointer;margin-top:8px}
+
+    .after{background:var(--ink);color:var(--paper);padding:44px 40px}
+    .after .k{font-family:'Bricolage Grotesque',Arial,sans-serif;font-size:12px;letter-spacing:0.1em;text-transform:uppercase;
+      color:rgba(246,244,239,0.5)}
+    .after h2{font-size:40px;letter-spacing:-0.02em;margin:16px 0 14px}
+    .after p{color:rgba(246,244,239,0.82);font-family:'Fraunces',Georgia,serif;font-size:18px;line-height:1.6}
+    .after a{display:inline-block;margin-top:22px;border-bottom:2px solid var(--paper);padding-bottom:3px;font-weight:600;font-size:14px}
+
+    .map{max-width:1240px;margin:0 auto;padding:30px 72px 60px}
+    .map .frame{aspect-ratio:21/7;background:#e7e3db;border:1px solid var(--hair);display:flex;align-items:center;justify-content:center}
+    .map .frame button{border:1px solid var(--ink);background:var(--paper);padding:12px 22px;font:inherit;font-weight:600;font-size:14px;border-radius:2px}
+
+    .mail{max-width:1240px;margin:0 auto;padding:0 72px 90px}
+    .mail p{font-size:19px}
+    .mail a{color:var(--blue-link);border-bottom:2px solid var(--blue-link);padding-bottom:2px;font-weight:600}
+
+    .ft{background:var(--ink);color:var(--paper);padding:80px 72px 40px}
+    .ft .wm{font-family:'Bricolage Grotesque',Arial,sans-serif;font-weight:700;font-size:40px;letter-spacing:-0.02em;
+      padding-bottom:28px;border-bottom:1px solid rgba(246,244,239,0.18)}
+    .ft .cols{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:40px;padding:36px 0}
+    .ft h4{font-size:13px;letter-spacing:0.08em;text-transform:uppercase;color:rgba(246,244,239,0.5);margin:0 0 14px;font-weight:600}
+    .ft a,.ft p{color:rgba(246,244,239,0.82);font-size:14.5px;line-height:1.7;display:block}
+    .ft .bot{border-top:1px solid rgba(246,244,239,0.18);padding-top:22px;color:rgba(246,244,239,0.5);font-size:13px}
+  </style>
+</helmet>
+<div>
+  <header class="hdr">
+    <b><span class="dot"></span> ACC</b>
+    <nav><a>Home</a><a>About</a><a>Domains</a><a>Prayers</a><a>Calendar</a><a>Media</a><a class="on">Contact</a></nav>
+    <div class="soc"><a>Instagram</a><a>WhatsApp</a></div>
+  </header>
+
+  <section class="head">
+    <h1 class="disp">We Care.</h1>
+    <p class="verse serif">&ldquo;For where two or three gather in my name, there am I with them.&rdquo;
+      <span>Matthew 18:20, NIV</span></p>
+    <p class="intro">When we bring a request before God together, it carries further. Share yours below, or write to us directly if it isn't a prayer request.</p>
+  </section>
+
+  <div class="split">
+    <form class="form">
+      <div class="fld">
+        <label>Your name</label>
+        <input value="" placeholder="First and last name">
+      </div>
+      <div class="fld">
+        <label>Your Christ email</label>
+        <input value="you@gmail.com">
+        <p class="err">That doesn't look like a christuniversity.in address — we ask for one just so we know it's really you.</p>
+      </div>
+      <div class="fld">
+        <label>This is…</label>
+        <div class="sel">A prayer request
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+        </div>
+      </div>
+      <div class="fld">
+        <label>Your prayer request or message</label>
+        <textarea placeholder="Write as much or as little as you'd like."></textarea>
+      </div>
+      <div class="fld">
+        <div class="check">
+          <span class="box on"></span>
+          <div>
+            <p>Keep this private — it goes no further than whoever already reads the form.</p>
+            <span class="n">NEEDS CONFIG: who actually reads these submissions</span>
+          </div>
+        </div>
+      </div>
+      <button type="button" class="btn">Send</button>
+    </form>
+
+    <div class="after">
+      <p class="k">after you send</p>
+      <h2 class="disp">Received.</h2>
+      <p>Thank you — this has reached us. We'll hold it in prayer.</p>
+      <a href="#">Send another</a>
+    </div>
+  </div>
+
+  <section class="map">
+    <p class="label" style="margin-bottom:14px">the chapel</p>
+    <div class="frame">
+      <button>Show map</button>
+    </div>
+  </section>
+
+  <section class="mail">
+    <p>Contacting us about anything else? <a href="#">acc.kengeri@christuniversity.in</a></p>
+  </section>
+
+  <footer class="ft">
+    <div class="wm">Association of Christian Christites</div>
+    <div class="cols">
+      <div><h4>The chapel</h4><p>Chapel of St. Kuriakose Elias Chavara<br>CHRIST (Deemed to be University)<br>Kengeri Campus, Bengaluru 560074</p><a href="#">Open in Maps</a></div>
+      <div><h4>Pages</h4><a>About</a><a>Domains</a><a>Prayers</a><a>Calendar</a><a>Media</a><a>Contact</a></div>
+      <div><h4>Come along</h4><a href="#">Join the WhatsApp group</a><a href="#">@acc_kengeri</a><a href="#">acc.kengeri@christuniversity.in</a></div>
+    </div>
+    <div class="bot">© 2026 Association of Christian Christites</div>
+  </footer>
+</div>
+</x-dc>
+</body>
+</html>

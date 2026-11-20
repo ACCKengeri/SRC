@@ -1,0 +1,136 @@
+---
+/*
+  The About page's hand-off from the page head to the story: two torn paper
+  strips laid across the page, sky underneath, peach on top, the peach one
+  cut short with a little dog-ear at its end. The page ribbon slips under
+  them like under any other paper. The dog-ear folds (src/scripts/fold/fold.ts),
+  which nothing on the page mentions. Without JavaScript: the two strips.
+*/
+import grain from '../assets/paper/grain.webp';
+import { tornEdge, tornClipPath } from '../scripts/fold/torn';
+
+const FRONT = 21;
+const front = tornClipPath(tornEdge(FRONT));
+const back = tornClipPath(tornEdge(37));
+const studio = `${import.meta.env.BASE_URL}studio/`;
+---
+
+<div class="fold" aria-hidden="true" data-ribbon-end="loose" data-seed={FRONT} data-grain={grain.src} data-studio={studio}>
+  <div class="fold__under">
+    <div class="fold__back p-grain" style={`clip-path:${back}`}></div>
+  </div>
+  <div class="fold__strip">
+    <div class="fold__face p-grain" style={`clip-path:${front}`}></div>
+  </div>
+</div>
+
+<script>
+  import { initFold } from '../scripts/fold/fold';
+  const el = document.querySelector<HTMLElement>('.fold');
+  if (el) initFold(el, el.dataset.studio || '/studio/');
+</script>
+
+<style>
+  .fold {
+    --sh: clamp(2.25rem, 3.4vw, 3.25rem);
+    --end: 88%;
+    --fold-shadow: rgba(11, 63, 67, 0.3);
+    position: relative;
+    height: clamp(4.5rem, 8vw, 7rem);
+    /* the strips run off both edges of the page; never into a sideways scroll */
+    overflow-x: clip;
+  }
+  :global(:root[data-theme='night']) .fold {
+    --fold-shadow: rgba(0, 0, 0, 0.55);
+  }
+  @media (max-width: 48rem) {
+    .fold {
+      --end: 90%;
+    }
+  }
+
+  .fold__under,
+  .fold__strip {
+    position: absolute;
+    height: var(--sh);
+    filter: drop-shadow(0 1px 1px rgba(11, 63, 67, 0.1)) drop-shadow(0 6px 7px rgba(11, 63, 67, 0.15));
+  }
+  :global(:root[data-theme='night']) .fold__under,
+  :global(:root[data-theme='night']) .fold__strip {
+    filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.35)) drop-shadow(0 6px 8px rgba(0, 0, 0, 0.45));
+  }
+  .fold__under {
+    left: -2%;
+    right: -2%;
+    top: calc(50% - var(--sh) * 0.78);
+    transform: rotate(0.5deg);
+  }
+  .fold__strip {
+    left: -2%;
+    width: calc(var(--end) + 2%);
+    top: calc(50% - var(--sh) * 0.3);
+    transform: rotate(-0.7deg);
+    transform-origin: 0 50%;
+  }
+  .fold__back,
+  .fold__face {
+    position: absolute;
+    inset: 0;
+  }
+  .fold__back {
+    background-color: var(--sky);
+  }
+  .fold__face {
+    background-color: var(--peach);
+  }
+
+  /* the folded-over end, drawn by the script: the paper's back, a little
+     lighter, shaded from the crease */
+  .fold :global(.fold__flap) {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    pointer-events: none;
+  }
+  .fold :global(.fold__back-side) {
+    fill: color-mix(in srgb, var(--peach) 76%, #fff);
+  }
+  :global(:root[data-theme='night']) .fold :global(.fold__back-side) {
+    fill: color-mix(in srgb, var(--peach) 82%, #fff);
+  }
+  .fold :global(.fold__crease) {
+    stop-color: var(--fold-shadow);
+    stop-opacity: 0.55;
+  }
+  .fold :global(.fold__cast) {
+    flood-color: var(--fold-shadow);
+  }
+  /* where the corner is held: invisible, no cursor */
+  .fold :global(.fold__grip) {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 44px;
+    height: 44px;
+    touch-action: none;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+  }
+  /* the ribbon's end, once the strip is folded */
+  :global(.ribbon-pull) {
+    position: absolute;
+    z-index: 3;
+    width: 56px;
+    height: 56px;
+    cursor: grab;
+    touch-action: none;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+  }
+  :global(.ribbon-pull:active) {
+    cursor: grabbing;
+  }
+</style>

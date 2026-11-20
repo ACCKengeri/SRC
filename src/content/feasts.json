@@ -1,0 +1,226 @@
+[
+  {
+    "id": "2026-01-01",
+    "title": "Feast of Mary, Mother of God",
+    "date": "2026-01-01",
+    "time": "All Day",
+    "description": "Solemnity of Mary, Holy Mother of God."
+  },
+  {
+    "id": "2026-01-03",
+    "title": "Feast of St. Kuriakose Elias Chavara",
+    "date": "2026-01-03",
+    "time": "All Day",
+    "description": "Feast of the founder of the CMI congregation and Patron of Christ University."
+  },
+  {
+    "id": "2026-01-06",
+    "title": "The Epiphany of the Lord",
+    "date": "2026-01-06",
+    "time": "All Day",
+    "description": "Commemorating the visit of the Magi to the Christ child."
+  },
+  {
+    "id": "2026-01-25",
+    "title": "Conversion of St. Paul",
+    "date": "2026-01-25",
+    "time": "All Day",
+    "description": "Feast of the conversion of the Apostle Paul."
+  },
+  {
+    "id": "2026-02-02",
+    "title": "Presentation of the Lord",
+    "date": "2026-02-02",
+    "time": "All Day",
+    "description": "Feast of the presentation of Jesus in the temple."
+  },
+  {
+    "id": "2026-03-19",
+    "title": "Feast of St. Joseph",
+    "date": "2026-03-19",
+    "time": "All Day",
+    "description": "Solemnity of Saint Joseph, Husband of the Blessed Virgin Mary."
+  },
+  {
+    "id": "2026-03-25",
+    "title": "Feast of the Annunciation",
+    "date": "2026-03-25",
+    "time": "All Day",
+    "description": "Annunciation of the Lord by Angel Gabriel to Mary."
+  },
+  {
+    "id": "2026-04-03",
+    "title": "Good Friday",
+    "date": "2026-04-03",
+    "time": "All Day",
+    "description": "Commemoration of the Crucifixion of Jesus Christ."
+  },
+  {
+    "id": "2026-04-05",
+    "title": "Easter Sunday",
+    "date": "2026-04-05",
+    "time": "All Day",
+    "description": "Celebrating the glorious Resurrection of our Lord Jesus Christ."
+  },
+  {
+    "id": "2026-05-24",
+    "title": "Pentecost Sunday",
+    "date": "2026-05-24",
+    "time": "All Day",
+    "description": "Commemorating the descent of the Holy Spirit upon the Apostles."
+  },
+  {
+    "id": "2026-06-04",
+    "title": "Corpus Christi",
+    "date": "2026-06-04",
+    "time": "All Day",
+    "description": "Solemnity of the Most Holy Body and Blood of Christ."
+  },
+  {
+    "id": "2026-06-29",
+    "title": "Feast of St. Peter and St. Paul",
+    "date": "2026-06-29",
+    "time": "All Day",
+    "description": "Honoring the martyrdom of the two chief Apostles in Rome."
+  },
+  {
+    "id": "2026-07-03",
+    "title": "Feast of St. Thomas the Apostle",
+    "date": "2026-07-03",
+    "time": "All Day",
+    "description": "Patron Saint of India, who brought Christ's message to Indian shores."
+  },
+  {
+    "id": "2026-07-26",
+    "title": "Feast of St. Joachim and St. Anne",
+    "date": "2026-07-26",
+    "time": "All Day",
+    "description": "Feast of the parents of the Blessed Virgin Mary."
+  },
+  {
+    "id": "2026-07-31",
+    "title": "Feast of St. Ignatius of Loyola",
+    "date": "2026-07-31",
+    "time": "All Day",
+    "description": "Feast of the founder of the Society of Jesus (Jesuits)."
+  },
+  {
+    "id": "2026-08-06",
+    "title": "Transfiguration of the Lord",
+    "date": "2026-08-06",
+    "time": "All Day",
+    "description": "Commemorating the Transfiguration of Jesus on Mount Tabor."
+  },
+  {
+    "id": "2026-08-15",
+    "title": "Assumption of Mother Mary",
+    "date": "2026-08-15",
+    "time": "All Day",
+    "description": "The Assumption of the Blessed Virgin Mary into Heaven."
+  },
+  {
+    "id": "2026-08-28",
+    "title": "Feast of St. Augustine",
+    "date": "2026-08-28",
+    "time": "All Day",
+    "description": "Feast of Saint Augustine, Bishop and Doctor of the Church."
+  },
+  {
+    "id": "2026-09-08",
+    "title": "Nativity of Blessed Virgin Mary",
+    "date": "2026-09-08",
+    "time": "All Day",
+    "description": "Celebrating the birth of the Blessed Virgin Mary (Monti Fest)."
+  },
+  {
+    "id": "2026-09-27",
+    "title": "Feast of St. Vincent de Paul",
+    "date": "2026-09-27",
+    "time": "All Day",
+    "description": "Feast of the patron saint of charity."
+  },
+  {
+    "id": "2026-09-29",
+    "title": "Feast of the Archangels",
+    "date": "2026-09-29",
+    "time": "All Day",
+    "description": "Feast of Saints Michael, Gabriel, and Raphael."
+  },
+  {
+    "id": "2026-10-01",
+    "title": "Feast of St. Therese of Lisieux",
+    "date": "2026-10-01",
+    "time": "All Day",
+    "description": "Feast of the Little Flower, Patroness of missions."
+  },
+  {
+    "id": "2026-10-04",
+    "title": "Feast of St. Francis of Assisi",
+    "date": "2026-10-04",
+    "time": "All Day",
+    "description": "Patron Saint of animals and the environment."
+  },
+  {
+    "id": "2026-10-15",
+    "title": "Feast of St. Teresa of Avila",
+    "date": "2026-10-15",
+    "time": "All Day",
+    "description": "Feast of the great Carmelite mystic and doctor of the Church."
+  },
+  {
+    "id": "2026-11-01",
+    "title": "All Saints' Day",
+    "date": "2026-11-01",
+    "time": "All Day",
+    "description": "Solemnity honoring all the saints, known and unknown."
+  },
+  {
+    "id": "2026-11-02",
+    "title": "All Souls' Day",
+    "date": "2026-11-02",
+    "time": "All Day",
+    "description": "Day of prayer and remembrance for all the faithful departed."
+  },
+  {
+    "id": "2026-11-22",
+    "title": "Feast of St. Cecilia",
+    "date": "2026-11-22",
+    "time": "All Day",
+    "description": "Feast of St. Cecilia, patroness of musicians and singers."
+  },
+  {
+    "id": "2026-11-30",
+    "title": "Feast of St. Andrew the Apostle",
+    "date": "2026-11-30",
+    "time": "All Day",
+    "description": "Feast of Saint Andrew, Apostle of Christ."
+  },
+  {
+    "id": "2026-12-03",
+    "title": "Feast of St. Francis Xavier",
+    "date": "2026-12-03",
+    "time": "All Day",
+    "description": "Feast of the great Jesuit missionary to Asia."
+  },
+  {
+    "id": "2026-12-08",
+    "title": "Immaculate Conception",
+    "date": "2026-12-08",
+    "time": "All Day",
+    "description": "Solemnity of the Immaculate Conception of the Blessed Virgin Mary."
+  },
+  {
+    "id": "2026-12-25",
+    "title": "Christmas",
+    "date": "2026-12-25",
+    "time": "All Day",
+    "description": "The Nativity of our Lord and Savior Jesus Christ."
+  },
+  {
+    "id": "2026-12-26",
+    "title": "Feast of St. Stephen",
+    "date": "2026-12-26",
+    "time": "All Day",
+    "description": "Feast of the first Christian martyr."
+  }
+]

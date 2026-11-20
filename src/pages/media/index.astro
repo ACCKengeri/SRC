@@ -1,0 +1,883 @@
+---
+/*
+  Media: every event, straight from the ACC Drive (src/lib/live/drive.ts).
+  Each folder in the Events folder is an event; opening one shows its photos
+  and videos at /media/?e=<event>. Nothing here is built in: a new folder is
+  on the page within minutes of being made.
+*/
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { LIVE, folderUrl } from '../../lib/live/config';
+---
+
+<BaseLayout
+  title="Media | Association of Christian Christites"
+  description="Photos and videos from ACC events, newest first."
+>
+  <section class="page-head" id="media-head">
+    <h1>Media</h1>
+    <p>Photos and videos from ACC events, newest first.</p>
+  </section>
+
+  <section class="albums" id="albums" aria-label="Events">
+    <div class="album-grid" id="album-grid" hidden></div>
+    <div class="album-skeleton" id="album-skeleton" aria-hidden="true">
+      {Array.from({ length: 4 }).map((_, i) => <div class:list={['skeleton-tile', { 'skeleton-tile--feat': i === 0 }]} />)}
+    </div>
+    <div class="media-note sheet" id="media-note" hidden>
+      <p class="media-note__t" id="media-note-t"></p>
+      <p class="media-note__s" id="media-note-s"></p>
+      <a class="btn--link" id="media-note-a" href={folderUrl(LIVE.eventsFolder)} target="_blank" rel="noopener noreferrer" hidden>Open the photos on Google Drive</a>
+    </div>
+    <noscript><p class="media-note__s">The photos need JavaScript turned on.</p></noscript>
+  </section>
+
+  <section class="event" id="event" hidden aria-labelledby="event-title">
+    <button class="event__back" id="event-back" type="button">All events</button>
+    <header class="event__head">
+      <h2 class="event__title" id="event-title"></h2>
+      <p class="event__meta" id="event-meta"></p>
+      <p class="event__about" id="event-about" hidden></p>
+    </header>
+    <div class="event__grid" id="event-grid"></div>
+  </section>
+
+  <div class="lightbox on-deep" id="lightbox" role="dialog" aria-modal="true" aria-label="Photo viewer" hidden>
+    <button class="lightbox__close" id="lightbox-close" type="button" aria-label="Close">&times;</button>
+    <button class="lightbox__nav lightbox__nav--prev" id="lightbox-prev" type="button" aria-label="Previous">&larr;</button>
+    <div class="lightbox__stage" id="lightbox-stage"></div>
+    <button class="lightbox__nav lightbox__nav--next" id="lightbox-next" type="button" aria-label="Next">&rarr;</button>
+    <div class="lightbox__footer">
+      <p class="lightbox__caption">
+        <span id="lightbox-title"></span>
+        <span class="lightbox__position" id="lightbox-position"></span>
+      </p>
+      <div class="lightbox__strip" id="lightbox-strip"></div>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  import { onLive } from '../../lib/live/read';
+  import { el } from '../../lib/live/dom';
+  import { onEvents, shapeEvents, eventsFolder, photoUrl, photoUrlAlt, videoUrl, aboutText, type LiveEvent, type DriveItem, type RawEvents } from '../../lib/live/drive';
+  import { folderUrl } from '../../lib/live/config';
+  import type { LiveEventMeta } from '../../lib/live/schema';
+
+  const $ = (id: string) => document.getElementById(id)!;
+  const grid = $('album-grid'), skeleton = $('album-skeleton'), note = $('media-note');
+  const head = $('media-head'), albums = $('albums'), view = $('event'), viewGrid = $('event-grid');
+  const baseTitle = document.title;
+
+  let events: LiveEvent[] = [];
+  let raw: RawEvents | null = null;
+  let meta: LiveEventMeta[] = [];
+  let ready = false;
+
+  /* ---------- photos from Drive, with the second host as a fallback ---------- */
+  function photo(item: DriveItem, sizes: string, widths: number[], alt = '') {
+    const img = document.createElement('img');
+    img.alt = alt;
+    img.decoding = 'async';
+    img.sizes = sizes;
+    const set = (u: (id: string, w: number) => string) => {
+      img.srcset = widths.map((w) => `${u(item.id, w)} ${w}w`).join(', ');
+      img.src = u(item.id, widths[widths.length - 1]);
+    };
+    set(photoUrl);
+    img.addEventListener('error', () => set(photoUrlAlt), { once: true });
+    if (item.w && item.h) {
+      img.width = item.w;
+      img.height = item.h;
+    }
+    return img;
+  }
+
+  const fmtDate = (d: string) => {
+    if (!d) return '';
+    const [y, m, day] = d.split('-').map(Number);
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    return day ? `${day} ${months[m - 1]} ${y}` : `${months[m - 1]} ${y}`;
+  };
+  const counted = (e: LiveEvent) => {
+    const p = e.items.filter((x) => x.kind === 'image').length, v = e.items.length - p;
+    return [p && `${p} photo${p === 1 ? '' : 's'}`, v && `${v} video${v === 1 ? '' : 's'}`].filter(Boolean).join(', ');
+  };
+
+  function message(title: string, sub: string, driveLink = false) {
+    skeleton.hidden = true;
+    grid.hidden = true;
+    note.hidden = false;
+    $('media-note-t').textContent = title;
+    $('media-note-s').textContent = sub;
+    const a = $('media-note-a') as HTMLAnchorElement;
+    a.hidden = !driveLink;
+    if (raw) a.href = folderUrl(raw.folder);
+  }
+
+  /* ---------- the events ---------- */
+  function renderGrid() {
+    const shown = events.filter((e) => e.items.length > 0);
+    if (!shown.length) return message('No events yet.', 'Photos appear here as soon as an event folder has them.');
+    note.hidden = true;
+    skeleton.hidden = true;
+    grid.hidden = false;
+    grid.dataset.count = String(shown.length);
+    grid.replaceChildren(
+      ...shown.map((e, i) => {
+        const a = el('a', grid, i === 0 ? 'album-cover album-cover--feat' : 'album-cover');
+        a.href = `?e=${encodeURIComponent(e.slug)}`;
+        a.dataset.slug = e.slug;
+        if (e.cover) {
+          const img = photo(e.cover, i === 0 ? '(max-width: 48rem) 100vw, 60vw' : '(max-width: 48rem) 100vw, 30vw', [480, 800, 1200]);
+          img.loading = i < 3 ? 'eager' : 'lazy';
+          a.appendChild(img);
+        }
+        a.append(el('span', grid, 'album-cover__title', e.title), el('span', grid, 'album-cover__count', [fmtDate(e.date), counted(e)].filter(Boolean).join(', ')));
+        return a;
+      }),
+    );
+  }
+
+  /* ---------- one event ---------- */
+  let open: LiveEvent | null = null;
+  function showEvent(slug: string | null) {
+    open = slug ? events.find((e) => e.slug === slug || e.id === slug) ?? null : null;
+    const inEvent = !!slug;
+    head.hidden = inEvent;
+    albums.hidden = inEvent && !!open;
+    view.hidden = !open;
+    if (inEvent && !open) {
+      document.title = baseTitle;
+      head.hidden = false;
+      albums.hidden = false;
+      return message("That event isn't here any more.", 'It may have been renamed or moved. Here is everything else.');
+    }
+    if (!open) {
+      document.title = baseTitle;
+      if (ready) renderGrid();
+      return;
+    }
+    const e = open;
+    document.title = `${e.title} | Media | Association of Christian Christites`;
+    $('event-title').textContent = e.title;
+    $('event-meta').textContent = [fmtDate(e.date), counted(e)].filter(Boolean).join(', ');
+    const about = $('event-about');
+    about.textContent = e.description;
+    about.hidden = !e.description;
+    if (!e.description && e.about)
+      aboutText(e.about).then((t) => {
+        if (open === e && t) {
+          about.textContent = t;
+          about.hidden = false;
+        }
+      });
+    viewGrid.replaceChildren(
+      ...e.items.map((item, i) => {
+        const b = el('button', viewGrid, `event__tile${item.kind === 'video' ? ' event__tile--video' : ''}`);
+        b.type = 'button';
+        b.dataset.i = String(i);
+        b.setAttribute('aria-label', item.kind === 'video' ? `Play video ${i + 1}` : `Open photo ${i + 1}`);
+        if (item.w && item.h) b.style.aspectRatio = `${item.w} / ${item.h}`;
+        const img = photo(item, '(max-width: 40rem) 50vw, (max-width: 64rem) 33vw, 25vw', [320, 640]);
+        img.loading = i < 8 ? 'eager' : 'lazy';
+        b.appendChild(img);
+        return b;
+      }),
+    );
+    window.scrollTo({ top: 0 });
+  }
+
+  const slugInUrl = () => new URLSearchParams(location.search).get('e');
+  function go(slug: string | null) {
+    const url = new URL(location.href);
+    if (slug) url.searchParams.set('e', slug);
+    else url.searchParams.delete('e');
+    history.pushState({ media: slug }, '', url);
+    showEvent(slug);
+  }
+  grid.addEventListener('click', (ev) => {
+    const a = (ev.target as HTMLElement).closest<HTMLAnchorElement>('.album-cover');
+    if (!a || ev.metaKey || ev.ctrlKey || ev.shiftKey) return;
+    ev.preventDefault();
+    go(a.dataset.slug!);
+  });
+  $('event-back').addEventListener('click', () => {
+    if (history.state && 'media' in history.state) history.back();
+    else go(null);
+  });
+  window.addEventListener('popstate', () => ready && showEvent(slugInUrl()));
+  viewGrid.addEventListener('click', (ev) => {
+    const b = (ev.target as HTMLElement).closest<HTMLButtonElement>('.event__tile');
+    if (b && open) openLightbox(Number(b.dataset.i));
+  });
+
+  /* ---------- live data: the Sheet's notes, then the folders ---------- */
+  function apply() {
+    if (!raw) return;
+    events = shapeEvents(raw, meta);
+    ready = true;
+    showEvent(slugInUrl());
+  }
+  let started = '';
+  const start = (folder: string) => {
+    if (folder === started) return;
+    started = folder;
+    onEvents(
+      folder,
+      (r) => {
+        raw = r;
+        apply();
+      },
+      () => message("The photos can't be loaded right now.", 'Please try again in a little while, or see them on Google Drive.', true),
+    );
+  };
+  onLive((d) => {
+    meta = d.events;
+    start(eventsFolder(d.settings));
+    apply();
+  });
+  // don't wait on the Sheet to start on the photos
+  start(eventsFolder());
+
+  /* ---------- lightbox ---------- */
+  const lightbox = $('lightbox');
+  // The dialog is authored inside <main>, but opening it marks <main> inert.
+  // Re-home it to <body> first, or it would be inert along with everything
+  // behind it: unclickable and unreachable by keyboard.
+  document.body.appendChild(lightbox);
+  const stage = $('lightbox-stage'), strip = $('lightbox-strip'), closeBtn = $('lightbox-close');
+  let at = 0;
+  let lastFocused: HTMLElement | null = null;
+
+  function renderStage() {
+    if (!open) return;
+    const item = open.items[at];
+    stage.replaceChildren();
+    if (item.kind === 'video') {
+      const f = document.createElement('iframe');
+      f.src = videoUrl(item.id);
+      f.allow = 'autoplay; fullscreen';
+      f.allowFullscreen = true;
+      f.title = `${open.title}, video`;
+      stage.appendChild(f);
+    } else {
+      stage.appendChild(photo(item, '100vw', [1024, 1600, 2048], `${open.title}, photo ${at + 1} of ${open.items.length}`));
+    }
+    $('lightbox-title').textContent = open.title;
+    $('lightbox-position').textContent = `${at + 1} of ${open.items.length}`;
+    strip.querySelectorAll('.lightbox__thumb').forEach((t, i) => {
+      t.classList.toggle('is-active', i === at);
+      if (i === at) t.setAttribute('aria-current', 'true');
+      else t.removeAttribute('aria-current');
+    });
+    const t = strip.children[at] as HTMLElement | undefined;
+    if (t) strip.scrollTo({ left: t.offsetLeft - strip.clientWidth / 2 + t.clientWidth / 2, behavior: 'smooth' });
+  }
+
+  function openLightbox(i: number) {
+    if (!open) return;
+    at = i;
+    strip.replaceChildren(
+      ...open.items.map((item, j) => {
+        const b = document.createElement('button');
+        b.className = 'lightbox__thumb';
+        b.type = 'button';
+        b.setAttribute('aria-label', `${item.kind === 'video' ? 'Video' : 'Photo'} ${j + 1}`);
+        const img = photo(item, '56px', [160]);
+        img.loading = 'lazy';
+        b.appendChild(img);
+        b.addEventListener('click', () => {
+          at = j;
+          renderStage();
+        });
+        return b;
+      }),
+    );
+    renderStage();
+    lastFocused = document.activeElement as HTMLElement;
+    lightbox.hidden = false;
+    document.body.style.overflow = 'hidden';
+    for (const s of ['main', '.site-header', 'footer']) document.querySelector(s)?.setAttribute('inert', '');
+    closeBtn.focus();
+    document.addEventListener('keydown', onKeydown);
+  }
+
+  function closeLightbox() {
+    lightbox.hidden = true;
+    stage.replaceChildren();
+    document.body.style.overflow = '';
+    for (const s of ['main', '.site-header', 'footer']) document.querySelector(s)?.removeAttribute('inert');
+    document.removeEventListener('keydown', onKeydown);
+    lastFocused?.focus();
+  }
+
+  function step(delta: number) {
+    if (!open) return;
+    at = (at + delta + open.items.length) % open.items.length;
+    renderStage();
+  }
+
+  function onKeydown(e: KeyboardEvent) {
+    if (e.key === 'Escape') return closeLightbox();
+    if (e.key === 'ArrowLeft') return step(-1);
+    if (e.key === 'ArrowRight') return step(1);
+    if (e.key === 'Tab') {
+      const focusable = Array.from(lightbox.querySelectorAll<HTMLElement>('button:not([disabled]), iframe'));
+      const first = focusable[0], last = focusable[focusable.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    }
+  }
+
+  closeBtn.addEventListener('click', closeLightbox);
+  // Clicking the dark backdrop (not the photo or a control) closes it too.
+  lightbox.addEventListener('click', (e) => {
+    const t = e.target as HTMLElement;
+    if (t === lightbox || t === stage || t.classList.contains('lightbox__footer')) closeLightbox();
+  });
+  $('lightbox-prev').addEventListener('click', () => step(-1));
+  $('lightbox-next').addEventListener('click', () => step(1));
+</script>
+
+<style>
+  .page-head {
+    max-width: var(--container-wide);
+    margin: 0 auto;
+    padding: var(--space-9) var(--gutter) var(--space-7);
+  }
+  .page-head[hidden],
+  .albums[hidden],
+  .event[hidden] {
+    display: none;
+  }
+
+  .page-head h1 {
+    font-size: var(--text-h1);
+  }
+
+  .page-head p {
+    margin: var(--space-4) 0 0;
+    color: var(--text-muted);
+    font-size: var(--text-lead);
+    max-width: 52ch;
+  }
+
+  .albums {
+    max-width: var(--container-wide);
+    margin: 0 auto var(--space-10);
+    padding: 0 var(--gutter);
+  }
+
+  /* The tiles are built in the browser from Drive, so every tile selector
+     is :global (scoped styles never reach elements created there unless
+     they carry the scope attribute, which el() gives them anyway). */
+  .album-grid,
+  .album-skeleton {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--space-4);
+  }
+  .album-grid[hidden],
+  .album-skeleton[hidden],
+  .media-note[hidden] {
+    display: none;
+  }
+  .album-grid :global(.album-cover),
+  .skeleton-tile {
+    aspect-ratio: 4 / 5;
+  }
+  .album-grid :global(.album-cover--feat),
+  .skeleton-tile--feat {
+    grid-column: span 2;
+    grid-row: span 2;
+    aspect-ratio: auto;
+  }
+  /* One event: wide and alone. Two: side by side. Four: one large beside a
+     column of three, so no row is left half empty. */
+  .album-grid[data-count='1'] {
+    grid-template-columns: 1fr;
+  }
+  .album-grid[data-count='1'] :global(.album-cover--feat) {
+    grid-column: auto;
+    grid-row: auto;
+    aspect-ratio: 16 / 9;
+  }
+  .album-grid[data-count='2'] {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .album-grid[data-count='2'] :global(.album-cover--feat) {
+    grid-column: auto;
+    grid-row: auto;
+    aspect-ratio: 4 / 5;
+  }
+  .album-grid[data-count='4'] {
+    grid-template-columns: 2fr 1fr;
+  }
+  .album-grid[data-count='4'] :global(.album-cover) {
+    aspect-ratio: 4 / 3;
+  }
+  .album-grid[data-count='4'] :global(.album-cover--feat) {
+    grid-column: 1;
+    grid-row: span 3;
+    aspect-ratio: auto;
+  }
+
+  /* An album is a print with two more stacked behind it, a little askew:
+     the cover photo sits on a paper mat, and the prints underneath show at
+     the edges in the album's paper colours. The tile itself never takes a
+     transform (that would lift the stack above its own mat); the photo moves
+     instead. */
+  .album-grid {
+    isolation: isolate;
+    gap: clamp(1.5rem, 3.5vw, 2.75rem);
+  }
+  .album-grid :global(.album-cover) {
+    --mat: 8px;
+    --u1: var(--seafoam);
+    --u2: var(--butter);
+    --ur: 2.2deg;
+    position: relative;
+    display: block;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    border-radius: var(--radius-xs);
+    background: var(--sheet);
+    box-shadow: var(--lift-2);
+    text-decoration: none;
+  }
+  .album-grid :global(.album-cover:nth-child(4n + 2)) {
+    --u1: var(--peach);
+    --u2: var(--sky);
+    --ur: -2deg;
+  }
+  .album-grid :global(.album-cover:nth-child(4n + 3)) {
+    --u1: var(--butter);
+    --u2: var(--seafoam);
+    --ur: 1.6deg;
+  }
+  .album-grid :global(.album-cover:nth-child(4n + 4)) {
+    --u1: var(--sky);
+    --u2: var(--peach);
+    --ur: -1.4deg;
+  }
+  .album-grid :global(.album-cover::before) {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: var(--radius-xs);
+    background: var(--u1);
+    transform: translate(6px, 5px) rotate(var(--ur));
+    box-shadow: var(--lift-1), -12px 9px 0 -2px var(--u2);
+    transition: transform 0.5s var(--ease-soft);
+  }
+  .album-grid :global(.album-cover:hover::before),
+  .album-grid :global(.album-cover:focus-visible::before) {
+    transform: translate(9px, 8px) rotate(calc(var(--ur) * 1.8));
+  }
+
+  .album-grid :global(.album-cover img) {
+    position: absolute;
+    inset: var(--mat);
+    width: calc(100% - 2 * var(--mat));
+    height: calc(100% - 2 * var(--mat));
+    object-fit: cover;
+    border-radius: 2px;
+    background: var(--teal-wash);
+    transition: transform 0.6s var(--ease-soft);
+  }
+  .album-grid :global(.album-cover:hover img),
+  .album-grid :global(.album-cover:focus-visible img) {
+    transform: scale(1.015);
+  }
+  .album-grid :global(.album-cover:active img) {
+    transform: scale(0.99);
+  }
+
+  .album-grid :global(.album-cover::after) {
+    content: '';
+    position: absolute;
+    inset: var(--mat);
+    z-index: 1;
+    border-radius: 2px;
+    background: linear-gradient(to top, var(--scrim-strong) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .album-grid :global(.album-cover__title),
+  .album-grid :global(.album-cover__count) {
+    position: absolute;
+    left: 0;
+    right: 0;
+    z-index: 2;
+    display: block;
+    text-align: left;
+    padding: 0 calc(var(--mat) + var(--space-4));
+  }
+
+  .album-grid :global(.album-cover__title) {
+    bottom: calc(var(--mat) + var(--space-6));
+    color: var(--on-deep);
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: var(--text-h4);
+    line-height: 1.15;
+    text-wrap: balance;
+  }
+
+  .album-grid :global(.album-cover--feat .album-cover__title) {
+    font-size: var(--text-h3);
+  }
+
+  .album-grid :global(.album-cover__count) {
+    bottom: calc(var(--mat) + var(--space-3));
+    color: color-mix(in srgb, var(--on-deep) 82%, transparent);
+    font-size: var(--text-small);
+  }
+
+  .skeleton-tile {
+    border-radius: var(--radius-xs);
+    background: linear-gradient(
+      100deg,
+      var(--bg-raised) 30%,
+      color-mix(in srgb, var(--bg-raised) 60%, var(--bg)) 50%,
+      var(--bg-raised) 70%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.6s ease-in-out infinite;
+  }
+
+  @keyframes shimmer {
+    0% {
+      background-position: 200% 0;
+    }
+    100% {
+      background-position: -200% 0;
+    }
+  }
+
+  /* empty, failed, or an event that's gone */
+  .media-note {
+    max-width: 34rem;
+    padding: clamp(1.75rem, 4vw, 2.5rem);
+  }
+  .media-note__t {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: var(--text-h4);
+    color: var(--ink-strong);
+  }
+  .media-note__s {
+    margin-top: var(--space-2);
+    color: var(--text-muted);
+  }
+  .media-note :global(.btn--link) {
+    display: inline-block;
+    margin-top: var(--space-5);
+  }
+
+  /* ---- one event ---- */
+  .event {
+    max-width: var(--container-wide);
+    margin: 0 auto var(--space-10);
+    padding: var(--space-8) var(--gutter) 0;
+  }
+  .event__back {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-height: 44px;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--teal);
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .event__back::before {
+    content: '\2190';
+  }
+  .event__back:hover {
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+  .event__head {
+    margin: var(--space-4) 0 var(--space-7);
+    max-width: 52rem;
+  }
+  .event__title {
+    font-size: var(--text-h1);
+    color: var(--teal);
+    letter-spacing: -0.03em;
+    line-height: 1.05;
+    text-wrap: balance;
+  }
+  .event__meta {
+    margin-top: var(--space-3);
+    color: var(--text-muted);
+  }
+  .event__about {
+    margin-top: var(--space-5);
+    font-size: var(--text-lead);
+    line-height: 1.5;
+    max-width: 60ch;
+    white-space: pre-line;
+  }
+  .event__about[hidden] {
+    display: none;
+  }
+  /* the photos as they were taken: each keeps its own shape, laid in columns */
+  .event__grid {
+    columns: 4 15rem;
+    column-gap: var(--space-4);
+  }
+  .event__grid :global(.event__tile) {
+    position: relative;
+    display: block;
+    width: 100%;
+    margin: 0 0 var(--space-4);
+    padding: 0;
+    border: 0;
+    border-radius: var(--radius-xs);
+    overflow: hidden;
+    background: var(--teal-wash);
+    box-shadow: var(--lift-1);
+    cursor: zoom-in;
+    break-inside: avoid;
+    aspect-ratio: 4 / 3;
+  }
+  .event__grid :global(.event__tile img) {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.6s var(--ease-soft);
+  }
+  .event__grid :global(.event__tile:hover img),
+  .event__grid :global(.event__tile:focus-visible img) {
+    transform: scale(1.02);
+  }
+  .event__grid :global(.event__tile--video) {
+    cursor: pointer;
+  }
+  /* a play mark on videos: a light disc with a teal triangle on it */
+  .event__grid :global(.event__tile--video::after) {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 3.25rem;
+    height: 3.25rem;
+    margin: -1.625rem 0 0 -1.625rem;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--sheet) 88%, transparent);
+    box-shadow: var(--lift-2);
+  }
+  .event__grid :global(.event__tile--video::before) {
+    content: '';
+    position: absolute;
+    z-index: 1;
+    left: 50%;
+    top: 50%;
+    margin: -0.6rem 0 0 -0.35rem;
+    border-style: solid;
+    border-width: 0.6rem 0 0.6rem 1rem;
+    border-color: transparent transparent transparent var(--teal);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .skeleton-tile {
+      animation: none;
+    }
+    .album-grid :global(.album-cover::before),
+    .album-grid :global(.album-cover img),
+    .event__grid :global(.event__tile img) {
+      transition: none;
+    }
+    .album-grid :global(.album-cover:hover img),
+    .album-grid :global(.album-cover:focus-visible img),
+    .event__grid :global(.event__tile:hover img),
+    .event__grid :global(.event__tile:focus-visible img) {
+      transform: none;
+    }
+  }
+
+  .lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    background: color-mix(in srgb, var(--teal-deep) 96%, transparent);
+    display: grid;
+    grid-template-rows: 1fr auto;
+  }
+
+  /* The class selector above outranks the UA's `[hidden] { display: none }`,
+     so without this the lightbox covered the whole page on load. */
+  .lightbox[hidden] {
+    display: none;
+  }
+
+  .lightbox__stage {
+    grid-row: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-6) var(--space-9);
+    min-height: 0;
+  }
+
+  .lightbox__stage :global(img) {
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    border-radius: var(--radius-sm);
+  }
+  .lightbox__stage :global(iframe) {
+    width: min(100%, 64rem);
+    aspect-ratio: 16 / 9;
+    max-height: 100%;
+    border: 0;
+    border-radius: var(--radius-sm);
+    background: #000;
+  }
+
+  .lightbox__close {
+    position: absolute;
+    top: var(--space-4);
+    right: var(--space-4);
+    width: 44px;
+    height: 44px;
+    border: none;
+    background: none;
+    color: var(--on-deep);
+    font-size: 1.75rem;
+    cursor: pointer;
+    z-index: 2;
+  }
+
+  .lightbox__nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: none;
+    background: color-mix(in srgb, var(--paper) 12%, transparent);
+    color: var(--on-deep);
+    font-size: var(--text-lead);
+    cursor: pointer;
+    z-index: 2;
+  }
+
+  .lightbox__nav--prev {
+    left: var(--space-4);
+  }
+
+  .lightbox__nav--next {
+    right: var(--space-4);
+  }
+
+  .lightbox__footer {
+    grid-row: 2;
+    padding: var(--space-4) var(--space-5) var(--space-5);
+    text-align: center;
+  }
+
+  .lightbox__caption {
+    margin: 0 0 var(--space-4);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1, 0.25rem);
+    color: var(--on-deep);
+    font-size: var(--text-small);
+  }
+
+  .lightbox__position {
+    color: color-mix(in srgb, var(--paper) 60%, transparent);
+    font-size: var(--text-micro);
+  }
+
+  .lightbox__strip {
+    display: flex;
+    gap: var(--space-2);
+    overflow-x: auto;
+    padding-bottom: var(--space-2);
+    scrollbar-width: thin;
+  }
+
+  .lightbox__strip :global(.lightbox__thumb) {
+    flex: 0 0 auto;
+    width: 3.5rem;
+    height: 3.5rem;
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    border: 2px solid transparent;
+    padding: 0;
+    cursor: pointer;
+    opacity: 0.55;
+    background: var(--teal-wash);
+    transition: opacity var(--duration-quick) var(--ease-quick), border-color var(--duration-quick) var(--ease-quick);
+  }
+  .lightbox__strip :global(.lightbox__thumb:first-child) {
+    margin-left: auto;
+  }
+  .lightbox__strip :global(.lightbox__thumb:last-child) {
+    margin-right: auto;
+  }
+
+  .lightbox__strip :global(.lightbox__thumb.is-active) {
+    opacity: 1;
+    border-color: var(--mark);
+  }
+
+  .lightbox__strip :global(.lightbox__thumb img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  @media (max-width: 56rem) {
+    .lightbox__stage {
+      padding: var(--space-5) var(--space-6);
+    }
+  }
+
+  @media (max-width: 48rem) {
+    .album-grid,
+    .album-skeleton,
+    .album-grid[data-count='2'],
+    .album-grid[data-count='4'] {
+      grid-template-columns: 1fr;
+    }
+    .album-grid :global(.album-cover),
+    .album-grid[data-count] :global(.album-cover),
+    .album-grid :global(.album-cover--feat),
+    .album-grid[data-count] :global(.album-cover--feat),
+    .skeleton-tile,
+    .skeleton-tile--feat {
+      grid-column: auto;
+      grid-row: auto;
+      aspect-ratio: 4 / 3;
+    }
+    .album-grid :global(.album-cover--feat .album-cover__title) {
+      font-size: var(--text-h4);
+    }
+    .event__grid {
+      columns: 2;
+      column-gap: var(--space-3);
+    }
+    .event__grid :global(.event__tile) {
+      margin-bottom: var(--space-3);
+    }
+  }
+</style>

@@ -1,0 +1,23 @@
+{
+  "artboards": [
+    { "file": "StyleTile.dc.html",     "title": "Design system",        "x": 0,    "y": 0,     "w": 1440, "h": 3600 },
+    { "file": "Main.dc.html",           "title": "Home — desktop",       "x": 0,    "y": 3780,  "w": 1440, "h": 5600 },
+    { "file": "HomeMobile.dc.html",     "title": "Home — mobile",        "x": 1650, "y": 3780,  "w": 390,  "h": 4100 },
+    { "file": "Domains.dc.html",        "title": "Domains — desktop",    "x": 0,    "y": 9560,  "w": 1440, "h": 3500 },
+    { "file": "DomainsMobile.dc.html",  "title": "Domains — mobile",     "x": 1650, "y": 9560,  "w": 390,  "h": 2700 },
+    { "file": "DomainDetail.dc.html",   "title": "Domain detail — Liturgy", "x": 0, "y": 13240, "w": 1440, "h": 3900 },
+    { "file": "RosaryReading.dc.html",  "title": "Rosary — reading mode", "x": 1650, "y": 13240, "w": 390,  "h": 900 },
+    { "file": "About.dc.html",          "title": "About",                "x": 0,    "y": 17320, "w": 1440, "h": 5300 },
+    { "file": "Prayers.dc.html",        "title": "Prayers",              "x": 0,    "y": 22800, "w": 1440, "h": 4300 },
+    { "file": "Calendar.dc.html",       "title": "Calendar",             "x": 0,    "y": 27280, "w": 1440, "h": 3200 },
+    { "file": "Media.dc.html",          "title": "Media + lightbox",     "x": 0,    "y": 30660, "w": 1440, "h": 3200 },
+    { "file": "Contact.dc.html",        "title": "Contact",              "x": 0,    "y": 34040, "w": 1440, "h": 2700 }
+  ],
+  "annotations": [
+    { "id": "intro", "x": 0, "y": -180, "w": 940, "text": "ACC website — full redesign in the madeinmay.studio idiom.\nAn editorial studio look on ACC's own content, photography and wordmark. Light-only, one electric-blue accent used sparingly. Canvas display face is Bricolage Grotesque standing in for Clash Display (Fontshare, self-hosted in production). All motion sits behind prefers-reduced-motion." },
+    { "id": "home-note", "x": 0, "y": 3560, "w": 800, "text": "Home — lean flow: hero (title + subtitle kept verbatim) -> welcome paragraph (kept verbatim) -> the 'ACC' wordmark dissolve -> six domains as peers -> Instagram (@acc_kengeri, build-time static grid) -> scripture close -> big footer. 'This week' and the weekly rhythm move to the Calendar page." },
+    { "id": "mobile-note", "x": 1650, "y": 3560, "w": 390, "text": "Mobile shown where layout diverges most — Home, Domains, and the Rosary reading mode (the make-or-break screen on a phone)." },
+    { "id": "gaps-note", "x": 0, "y": 13020, "w": 800, "text": "Visible [NEEDS ...] tags mark real content still owed by ACC — per-domain head contact, hours-per-week to join, who reads Contact messages, 2026 event dates, the founding story. Same honesty the live site already uses." }
+  ],
+  "launch": { "view": "canvas" }
+}

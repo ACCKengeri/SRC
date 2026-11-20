@@ -1,0 +1,63 @@
+[
+  {
+    "id": "daily-mass",
+    "order": 1,
+    "what": "Daily Mass",
+    "time": "7:30 am",
+    "where": "PU Chapel",
+    "frequency": "daily"
+  },
+  {
+    "id": "rosary",
+    "order": 2,
+    "what": "Rosary",
+    "time": "7:00 pm",
+    "where": "St. Kuriakose Elias Chapel",
+    "frequency": "daily"
+  },
+  {
+    "id": "confessions",
+    "order": 3,
+    "what": "Confessions",
+    "time": "Before Daily Mass",
+    "where": "St. Kuriakose Elias Chapel",
+    "frequency": "daily",
+    "note": "Also once a month"
+  },
+  {
+    "id": "adoration",
+    "order": 4,
+    "what": "Adoration",
+    "time": "8:00 pm",
+    "where": "St. Kuriakose Elias Chapel",
+    "frequency": "monthly",
+    "note": "First Friday only"
+  },
+  {
+    "id": "monthly-mass",
+    "order": 5,
+    "what": "Monthly Mass",
+    "time": "12:00 pm",
+    "where": "St. Kuriakose Elias Chapel",
+    "frequency": "monthly",
+    "note": "First Friday"
+  },
+  {
+    "id": "sunday-mass",
+    "order": 6,
+    "what": "Sunday Mass",
+    "time": "8:00 am",
+    "where": "St. Kuriakose Elias Chapel",
+    "frequency": "weekly",
+    "dayOfWeek": "Sunday"
+  },
+  {
+    "id": "way-of-the-cross",
+    "order": 7,
+    "what": "Way of the Cross",
+    "time": "Lent season",
+    "where": "Fridays before Rosary, Sundays after Mass",
+    "frequency": "seasonal",
+    "note": "Lent only"
+  }
+]

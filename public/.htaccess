@@ -1,0 +1,6 @@
+# Plain static export served from Apache — Astro's static build outputs
+# 404.html, but Apache doesn't serve it for missing pages unless told to.
+# Path here assumes the site is deployed at the domain root (astro.config.mjs's
+# default `base: '/'`). Deployed to a subdirectory instead? Change this path
+# to match, e.g. "/acc/404.html".
+ErrorDocument 404 /404.html

@@ -1,0 +1,158 @@
+---
+import '../styles/tokens.css';
+import '../styles/fonts.css';
+import '../styles/base.css';
+import '../styles/paper.css';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import PageRibbon from '../components/PageRibbon.astro';
+import { getCollection } from 'astro:content';
+
+interface Props {
+  title: string;
+  description: string;
+  /** Relative path under the built output, e.g. "og/about.png". Defaults
+   * to a slug derived from the current route, matching the filenames
+   * scripts/generate-og-images.mjs produces. */
+  ogImage?: string;
+}
+
+const { title, description } = Astro.props;
+// The domains, for live content that names one (see src/lib/live/read.ts).
+const liveDomains = JSON.stringify(
+  (await getCollection('domains')).map((d) => ({ id: d.data.id, name: d.data.name })),
+);
+const base = import.meta.env.BASE_URL;
+
+const routeSlug =
+  Astro.url.pathname
+    .replace(base, '')
+    .replace(/\/$/, '')
+    .replace(/\//g, '-') || 'home';
+const ogImage = Astro.props.ogImage ?? `${base}og/${routeSlug}.png`;
+---
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    <meta charset="UTF-8" />
+    <script is:inline>
+      document.documentElement.classList.remove('no-js');
+    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- The live content's Google key only answers this site, which it knows by the
+         Referer; keep sending the origin even if the server says otherwise. -->
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="icon" href={`${base}favicon.ico`} sizes="48x48" />
+    <link rel="apple-touch-icon" href={`${base}apple-touch-icon.png`} />
+    <meta name="theme-color" content="#f2f6f6" />
+    <script is:inline>
+      // Night (the Christmas easter egg) lasts for this visit: set it before
+      // anything paints, so a night page never flashes day.
+      try {
+        if (sessionStorage.getItem('acc-theme') === 'night') {
+          document.documentElement.dataset.theme = 'night';
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0b1124');
+        }
+      } catch (e) {}
+    </script>
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={ogImage} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+  </head>
+  <body>
+    <PageRibbon />
+    <Header />
+    <main>
+      <slot />
+    </main>
+    <Footer />
+    <script type="application/json" id="live-domains" is:inline set:html={liveDomains} />
+
+    <script>
+      // Live settings (email, WhatsApp, Instagram...) from the Sheet, onto
+      // every [data-live-*] element. Without them the built-in ones stay.
+      import { onLive } from '../lib/live/read';
+      import { applySettings } from '../lib/live/dom';
+      onLive((d) => applySettings(d.settings));
+    </script>
+
+    <script>
+      // Motion layer — deferred, gated, < 7KB. Nothing here is required for
+      // content to be readable: reveals fall back to visible (see base.css
+      // .no-js + reduced-motion rules).
+      const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      // Scroll-triggered reveals: fire once per element, and can never leave
+      // content stuck hidden. Anything already on screen reveals at once, and
+      // a hard timeout reveals everything if the observer ever misbehaves.
+      const targets = Array.from(document.querySelectorAll('.reveal, .reveal-scale, .reveal-lay'));
+      // Hard failsafe: turn the whole system off (content shown, no animation)
+      // if anything ever goes wrong. Never leave text stuck hidden.
+      const showAll = () => document.documentElement.classList.add('reveals-off');
+
+      if (reduced || !('IntersectionObserver' in window) || !targets.length) {
+        showAll();
+      } else {
+        let fired = false;
+        const io = new IntersectionObserver(
+          (entries) => {
+            fired = true;
+            for (const e of entries) {
+              if (e.isIntersecting) {
+                e.target.classList.add('is-in');
+                io.unobserve(e.target);
+              }
+            }
+          },
+          { rootMargin: '0px 0px -8% 0px', threshold: 0.05 }
+        );
+        targets.forEach((t) => io.observe(t));
+
+        const wakeVisible = () => {
+          const h = window.innerHeight + 200;
+          for (const t of targets) {
+            if (!t.classList.contains('is-in') && t.getBoundingClientRect().top < h) {
+              t.classList.add('is-in');
+              io.unobserve(t);
+            }
+          }
+        };
+        wakeVisible();
+        // Only if the observer never reports at all.
+        setTimeout(() => fired || showAll(), 3000);
+      }
+
+      // Smooth inertia scroll — off on reduced-motion and on touch, where the
+      // OS momentum already does the job and Lenis fights it. Bundled locally
+      // (no CDN); dynamic-imported so it never blocks first paint.
+      const coarse = window.matchMedia('(pointer: coarse)').matches;
+      if (!reduced && !coarse) {
+        import('lenis')
+          .then(({ default: Lenis }) => {
+            const lenis = new Lenis({ duration: 1.1, easing: (t) => 1 - Math.pow(1 - t, 3) });
+            // Lenis scrolls from script, which overflow: hidden can't stop:
+            // the phone menu pauses it while it is open (see Header.astro).
+            document.addEventListener('acc:scroll-lock', (e) => {
+              if ((e as CustomEvent<boolean>).detail) lenis.stop();
+              else lenis.start();
+            });
+            const raf = (time: number) => {
+              lenis.raf(time);
+              requestAnimationFrame(raf);
+            };
+            requestAnimationFrame(raf);
+          })
+          .catch(() => {});
+      }
+    </script>
+  </body>
+</html>

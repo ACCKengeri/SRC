@@ -1,0 +1,93 @@
+---
+/*
+  A cut-paper edge: three or four torn-and-cut paper layers stacked across the
+  full width, each a gentle seeded wave, each lifted off the one behind by a
+  soft shadow along its top edge. Used where one band of the page hands over
+  to the next (under the hero, under page heads, above the footer). The last
+  layer is usually the colour of whatever comes next, so the edge melts into
+  it. Seeded, so each edge on the site differs but never changes between
+  builds.
+*/
+interface Props {
+  /** Paper colours, back to front, as CSS values (var(--seafoam) ...). */
+  layers: string[];
+  seed?: number;
+  /** CSS height of the band. */
+  height?: string;
+  /** Hang from the top instead of rising from the bottom. */
+  flip?: boolean;
+  class?: string;
+}
+
+const { layers, seed = 1, height = 'clamp(56px, 7vw, 110px)', flip = false, class: cls } = Astro.props;
+
+const W = 1440, H = 100;
+let s = seed * 9301 + 49297;
+const rnd = () => ((s = (s * 9301 + 49297) % 233280) / 233280);
+
+const n = layers.length;
+const paths = layers.map((_, i) => {
+  // Back layers sit higher; each has its own two or three slow waves.
+  const base = 18 + (i * 62) / Math.max(1, n - 1) * (n > 1 ? 1 : 0) + (n === 1 ? 40 : 0);
+  const amp = 9 - i * 1.2;
+  const waves = [0, 1, 2].map((k) => ({
+    f: [1 + rnd() * 1.2, 2.2 + rnd() * 1.8, 4.5 + rnd() * 3][k],
+    a: [amp, amp * 0.45, amp * 0.18][k],
+    p: rnd() * Math.PI * 2,
+  }));
+  const y = (x: number) => Math.min(H - 6, Math.max(2, base + waves.reduce((t, w) => t + w.a * Math.sin((2 * Math.PI * w.f * x) / W + w.p), 0)));
+  const step = 40;
+  const pts: [number, number][] = [];
+  for (let x = -step; x <= W + step; x += step) pts.push([x, y(x)]);
+  // Catmull-Rom through the samples, as cubic Béziers.
+  let d = `M${pts[1][0]} ${pts[1][1].toFixed(1)}`;
+  for (let k = 1; k < pts.length - 2; k++) {
+    const [p0, p1, p2, p3] = [pts[k - 1], pts[k], pts[k + 1], pts[k + 2]];
+    const c1 = [p1[0] + (p2[0] - p0[0]) / 6, p1[1] + (p2[1] - p0[1]) / 6];
+    const c2 = [p2[0] - (p3[0] - p1[0]) / 6, p2[1] - (p3[1] - p1[1]) / 6];
+    d += ` C${c1[0].toFixed(1)} ${c1[1].toFixed(1)} ${c2[0].toFixed(1)} ${c2[1].toFixed(1)} ${p2[0]} ${p2[1].toFixed(1)}`;
+  }
+  return `${d} L${W + 40} ${H + 40} L-40 ${H + 40} Z`;
+});
+const fid = `pe-shadow-${seed}`;
+---
+
+<div class:list={['paper-edge', { 'paper-edge--flip': flip }, cls]} style={`--pe-h:${height}`} aria-hidden="true">
+  <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" focusable="false">
+    <defs>
+      <filter id={fid} x="-5%" y="-40%" width="110%" height="180%">
+        <feGaussianBlur stdDeviation="2.4" />
+      </filter>
+    </defs>
+    {
+      paths.map((d, i) => (
+        <g>
+          {i > 0 && <path d={d} transform="translate(0 -2.5)" class="paper-edge__shadow" filter={`url(#${fid})`} />}
+          <path d={d} style={`fill:${layers[i]}`} />
+        </g>
+      ))
+    }
+  </svg>
+</div>
+
+<style>
+  .paper-edge {
+    position: relative;
+    height: var(--pe-h);
+    width: 100%;
+    pointer-events: none;
+  }
+  .paper-edge svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+    /* clipped: a layer's blurred shadow must not spill below the band as a hairline */
+    overflow: hidden;
+  }
+  .paper-edge--flip svg {
+    transform: scaleY(-1);
+  }
+  .paper-edge__shadow {
+    fill: rgba(11, 63, 67, 0.28);
+  }
+</style>

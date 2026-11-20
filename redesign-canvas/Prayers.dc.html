@@ -1,0 +1,184 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300..800&family=Schibsted+Grotesk:wght@400..700&family=Fraunces:ital,opsz,wght@0,9..144,300..500;1,9..144,300..500&display=swap');
+    :root{--paper:#F6F4EF;--ink:#141210;--blue:#1E51F7;--blue-link:#1B3FC9;--blue-wash:#E7ECFB;--muted:#5C5A55;--hair:#D8D5CC}
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--paper);color:var(--ink);font-family:'Schibsted Grotesk',Arial,sans-serif;
+      font-size:17px;line-height:1.55;-webkit-font-smoothing:antialiased}
+    .disp{font-family:'Bricolage Grotesque',Arial,sans-serif;font-weight:600;line-height:1.0;letter-spacing:-0.025em;margin:0}
+    .serif{font-family:'Fraunces',Georgia,serif;font-weight:330}
+    p{margin:0} a{color:inherit;text-decoration:none}
+    .wide{max-width:1120px;margin:0 auto;padding:0 72px}
+    .read{max-width:760px;margin:0 auto;padding:0 72px}
+    .label{font-family:'Bricolage Grotesque',Arial,sans-serif;font-weight:500;font-size:14px;letter-spacing:0.03em;
+      color:var(--muted);text-transform:lowercase}
+
+    .hdr{display:flex;align-items:center;justify-content:space-between;padding:26px 72px;border-bottom:1px solid var(--hair);
+      position:sticky;top:0;background:rgba(246,244,239,0.92);backdrop-filter:blur(8px);z-index:5}
+    .hdr b{font-family:'Bricolage Grotesque',Arial,sans-serif;font-weight:700;font-size:19px;display:flex;align-items:center;gap:12px}
+    .hdr .dot{width:22px;height:22px;border:2px solid currentColor;border-radius:50%}
+    .hdr nav{display:flex;gap:28px;font-size:15px;font-weight:500}
+    .hdr nav a.on{color:var(--blue-link)}
+    .hdr .soc{display:flex;gap:16px;font-size:14px;color:var(--muted)}
+    .hdr .soc a:hover{color:var(--blue-link)}
+
+    .head{padding:110px 72px 70px;max-width:900px;margin:0 auto}
+    .head h1{font-size:104px;letter-spacing:-0.04em;line-height:0.94}
+    .head p{margin-top:24px;font-size:20px;color:#33302c;max-width:52ch;font-family:'Fraunces',Georgia,serif;font-weight:330}
+    .head .label{margin:0 0 20px}
+
+    .sec{padding:70px 0}
+    .sec > .wide > h2, .sec > .read > h2{font-family:'Bricolage Grotesque',Arial,sans-serif;font-weight:500;font-size:14px;
+      letter-spacing:0.03em;text-transform:lowercase;color:var(--muted);margin:0 0 30px}
+
+    .item{border-top:1px solid var(--hair)}
+    .item:last-child{border-bottom:1px solid var(--hair)}
+    .row{display:flex;justify-content:space-between;align-items:center;padding:22px 0;gap:24px}
+    .row .n{font-family:'Fraunces',Georgia,serif;font-weight:360;font-size:28px}
+    .row .x{color:var(--muted);font-size:24px}
+    .open{border-left:2px solid var(--blue);margin-left:-1px;padding:6px 0 32px 26px;max-width:60ch}
+    .open .ld{font-family:'Fraunces',Georgia,serif;font-size:19px;line-height:1.7;margin:0 0 6px}
+    .open .rp{font-family:'Fraunces',Georgia,serif;font-size:19px;line-height:1.7;font-weight:440;
+      border-left:2px solid var(--blue);padding-left:18px;margin:0 0 6px}
+
+    .rosary{background:var(--ink);color:var(--paper);padding:120px 72px}
+    .rosary .in{max-width:1120px;margin:0 auto}
+    .rosary .lab{font-family:'Bricolage Grotesque',Arial,sans-serif;font-weight:500;font-size:14px;letter-spacing:0.03em;
+      text-transform:lowercase;color:rgba(246,244,239,0.5);margin-bottom:24px}
+    .rosary h2{font-size:64px;letter-spacing:-0.03em;max-width:16ch}
+    .rosary p{margin-top:20px;color:rgba(246,244,239,0.8);font-family:'Fraunces',Georgia,serif;font-size:19px;
+      line-height:1.7;max-width:54ch}
+    .picker{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:44px}
+    .pk{border:1px solid rgba(246,244,239,0.25);padding:22px 20px}
+    .pk.on{border-color:var(--blue);background:rgba(30,81,247,0.14)}
+    .pk .d{font-size:12px;letter-spacing:0.06em;text-transform:uppercase;color:rgba(246,244,239,0.55)}
+    .pk .t{font-family:'Bricolage Grotesque',Arial,sans-serif;font-weight:600;font-size:22px;margin-top:8px}
+    .pk .tag{display:inline-block;margin-top:10px;font-size:11px;letter-spacing:0.05em;text-transform:uppercase;
+      background:var(--blue);color:var(--paper);padding:2px 8px}
+    .resume{margin-top:26px;display:inline-flex;align-items:center;gap:12px;background:var(--paper);color:var(--ink);
+      padding:14px 24px;font-weight:600;font-size:15px}
+
+    .mys{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--hair);border:1px solid var(--hair)}
+    .mys .c{background:var(--paper);padding:34px 38px}
+    .mys .c .d{font-size:12px;letter-spacing:0.06em;text-transform:uppercase;color:var(--blue-link)}
+    .mys .c h3{font-family:'Fraunces',Georgia,serif;font-weight:350;font-size:28px;margin:8px 0 16px}
+    .mys .c ol{margin:0;padding-left:20px;color:#33302c}
+    .mys .c ol li{margin-bottom:6px;font-size:15.5px}
+
+    .litany .lst{columns:2;column-gap:56px;font-family:'Fraunces',Georgia,serif;font-size:17px;line-height:1.85}
+    .litany .lst .rp{font-weight:440;color:#2a2622}
+
+    .ft{background:var(--ink);color:var(--paper);padding:80px 72px 40px}
+    .ft .wm{font-family:'Bricolage Grotesque',Arial,sans-serif;font-weight:700;font-size:40px;letter-spacing:-0.02em;
+      padding-bottom:28px;border-bottom:1px solid rgba(246,244,239,0.18)}
+    .ft .cols{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:40px;padding:36px 0}
+    .ft h4{font-size:13px;letter-spacing:0.08em;text-transform:uppercase;color:rgba(246,244,239,0.5);margin:0 0 14px;font-weight:600}
+    .ft a,.ft p{color:rgba(246,244,239,0.82);font-size:14.5px;line-height:1.7;display:block}
+    .ft .bot{border-top:1px solid rgba(246,244,239,0.18);padding-top:22px;color:rgba(246,244,239,0.5);font-size:13px}
+  </style>
+</helmet>
+<div>
+  <header class="hdr">
+    <b><span class="dot"></span> ACC</b>
+    <nav><a>Home</a><a>About</a><a>Domains</a><a class="on">Prayers</a><a>Calendar</a><a>Media</a><a>Contact</a></nav>
+    <div class="soc"><a>Instagram</a><a>WhatsApp</a></div>
+  </header>
+
+  <section class="head">
+    <div class="label">prayers</div>
+    <h1 class="disp">Said together.</h1>
+    <p>Prayer is a dialogue — a line spoken, a line answered. Everything here is typeset that way: the leader's line plain, the response set apart, no icons standing in for the difference.</p>
+  </section>
+
+  <section class="sec">
+    <div class="wide">
+      <h2>common prayers</h2>
+      <div class="item"><div class="row"><span class="n">Sign of the Cross</span><span class="x">+</span></div></div>
+      <div class="item">
+        <div class="row"><span class="n">Our Father</span><span class="x">–</span></div>
+        <div class="open">
+          <p class="ld">Our Father, who art in heaven, hallowed be thy name; thy kingdom come, thy will be done on earth as it is in heaven. Give us this day our daily bread, and forgive us our trespasses, as we forgive those who trespass against us; and lead us not into temptation, but deliver us from evil.</p>
+          <p class="rp">Amen.</p>
+        </div>
+      </div>
+      <div class="item"><div class="row"><span class="n">Hail Mary</span><span class="x">+</span></div></div>
+      <div class="item"><div class="row"><span class="n">Glory Be</span><span class="x">+</span></div></div>
+      <div class="item"><div class="row"><span class="n">Apostles' Creed</span><span class="x">+</span></div></div>
+      <div class="item"><div class="row"><span class="n">Fatima Prayer</span><span class="x">+</span></div></div>
+      <div class="item"><div class="row"><span class="n">Hail Holy Queen</span><span class="x">+</span></div></div>
+    </div>
+  </section>
+
+  <section class="rosary">
+    <div class="in">
+      <p class="lab">the rosary</p>
+      <h2 class="disp">A decade at a time, and it remembers where you stopped.</h2>
+      <p>Choose a set of mysteries and enter the reading mode — larger type, nothing else on the screen, one bead in view. Close it whenever; it keeps your place until you finish.</p>
+      <div class="picker">
+        <div class="pk"><span class="d">Mon &amp; Sat</span><span class="t">Joyful</span></div>
+        <div class="pk"><span class="d">Tue &amp; Fri</span><span class="t">Sorrowful</span></div>
+        <div class="pk on"><span class="d">Wed &amp; Sun</span><span class="t">Glorious</span><span class="tag">Today</span></div>
+        <div class="pk"><span class="d">Thursday</span><span class="t">Luminous</span></div>
+      </div>
+      <span class="resume">Resume Sorrowful — Decade 3 of 5
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </span>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="wide">
+      <h2>the mysteries</h2>
+      <div class="mys">
+        <div class="c"><span class="d">Monday &amp; Saturday</span><h3>Joyful</h3><ol><li>The Annunciation</li><li>The Visitation</li><li>The Nativity</li><li>The Presentation</li><li>The Finding in the Temple</li></ol></div>
+        <div class="c"><span class="d">Tuesday &amp; Friday</span><h3>Sorrowful</h3><ol><li>The Agony in the Garden</li><li>The Scourging at the Pillar</li><li>The Crowning with Thorns</li><li>The Carrying of the Cross</li><li>The Crucifixion</li></ol></div>
+        <div class="c"><span class="d">Wednesday &amp; Sunday</span><h3>Glorious</h3><ol><li>The Resurrection</li><li>The Ascension</li><li>The Descent of the Holy Spirit</li><li>The Assumption</li><li>The Coronation of Mary</li></ol></div>
+        <div class="c"><span class="d">Thursday</span><h3>Luminous</h3><ol><li>The Baptism in the Jordan</li><li>The Wedding at Cana</li><li>The Proclamation of the Kingdom</li><li>The Transfiguration</li><li>The Institution of the Eucharist</li></ol></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec litany">
+    <div class="read">
+      <h2>litany of the blessed virgin mary</h2>
+      <p class="serif" style="font-size:18px;color:var(--muted);margin-bottom:26px">The Litany of Loreto, in full.</p>
+      <div class="lst">
+        <p>Lord, have mercy.</p><p class="rp">Lord, have mercy.</p>
+        <p>Christ, have mercy.</p><p class="rp">Christ, have mercy.</p>
+        <p>Holy Mary,</p><p class="rp">pray for us.</p>
+        <p>Holy Mother of God,</p><p class="rp">pray for us.</p>
+        <p>Holy Virgin of virgins,</p><p class="rp">pray for us.</p>
+        <p>Mother of Christ,</p><p class="rp">pray for us.</p>
+        <p>Mother of the Church,</p><p class="rp">pray for us.</p>
+        <p>Mother of divine grace,</p><p class="rp">pray for us.</p>
+        <p>Mother most pure,</p><p class="rp">pray for us.</p>
+        <p>Mother most chaste,</p><p class="rp">pray for us.</p>
+        <p>Mother inviolate,</p><p class="rp">pray for us.</p>
+        <p>Mirror of justice,</p><p class="rp">pray for us.</p>
+        <p>Seat of wisdom,</p><p class="rp">pray for us.</p>
+        <p>Cause of our joy,</p><p class="rp">pray for us.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer class="ft">
+    <div class="wm">Association of Christian Christites</div>
+    <div class="cols">
+      <div><h4>The chapel</h4><p>Chapel of St. Kuriakose Elias Chavara<br>CHRIST (Deemed to be University)<br>Kengeri Campus, Bengaluru 560074</p><a href="#">Open in Maps</a></div>
+      <div><h4>Pages</h4><a>About</a><a>Domains</a><a>Prayers</a><a>Calendar</a><a>Media</a><a>Contact</a></div>
+      <div><h4>Come along</h4><a href="#">Join the WhatsApp group</a><a href="#">@acc_kengeri</a><a href="#">acc.kengeri@christuniversity.in</a></div>
+    </div>
+    <div class="bot">© 2026 Association of Christian Christites</div>
+  </footer>
+</div>
+</x-dc>
+</body>
+</html>

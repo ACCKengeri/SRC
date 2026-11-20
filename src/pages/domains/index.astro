@@ -1,0 +1,259 @@
+---
+import { getCollection } from 'astro:content';
+import { Image } from 'astro:assets';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Disclosure from '../../components/Disclosure.astro';
+import { domainBanners } from '../../lib/domain-images';
+import Needs from '../../components/Needs.astro';
+import { getTeam } from '../../lib/team';
+
+const base = import.meta.env.BASE_URL;
+const domains = (await getCollection('domains')).sort((a, b) => a.data.order - b.data.order);
+const team = await getTeam();
+// The strip is six prints laid in a row, each a little crooked.
+const TILT = [-2, 1.4, -0.8, 1.8, -1.4, 1];
+const TUCK = ['print--seafoam', 'print--butter', 'print--sky', '', 'print--seafoam', 'print--butter'];
+const headsFor = (id: string) =>
+  team.filter((m) => m.domains.includes(id)).map((m) => m.name);
+---
+
+<BaseLayout
+  title="Domains | Association of Christian Christites"
+  description="Six domains, one community: Animation, Liturgy, Outreach, Audio & Visual, Logistics & Hospitality, and Media & Communication."
+>
+  <section class="head">
+    <h1>Six domains,<br />one community</h1>
+    <p class="head__lead">
+      Every member finds a place through one of six domains, each with its own work, its own
+      heads, and its own way in. Each is run by students, for students.
+    </p>
+  </section>
+
+  <div class="strip" aria-hidden="true">
+    {
+      domains.map(({ data }, i) => (
+        <div class:list={['print', TUCK[i % TUCK.length], 'reveal-lay']} style={`--reveal-i:${i};--lay-r:${TILT[i] * 2}deg;--rest-r:${TILT[i]}deg`}>
+          <Image src={domainBanners[data.id]} alt="" widths={[200, 400]} width={400} sizes="16vw" class="graded" />
+        </div>
+      ))
+    }
+  </div>
+
+  <section class="belief" aria-labelledby="belief-heading">
+    <div class="belief__in sheet p-deep on-deep">
+      <h2 id="belief-heading" class="label belief__label">what holds us together</h2>
+      <div class="belief__mv">
+        <div>
+          <p class="belief__k">Mission</p>
+          <p class="belief__stmt">Following Christ, Changing Lives</p>
+        </div>
+        <div>
+          <p class="belief__k">Vision</p>
+          <p class="belief__stmt">Family and Fellowship</p>
+        </div>
+      </div>
+      <p class="belief__conn">
+        ACC operates through six specialised domains that allow members to apply their unique
+        talents: Animation, Liturgy, Outreach, Audio &amp; Visual, Logistics &amp; Hospitality,
+        and Media &amp; Communication. Each domain is managed by a dedicated student volunteer
+        body.
+      </p>
+    </div>
+  </section>
+
+  <section class="acc" aria-labelledby="acc-heading">
+    <h2 id="acc-heading" class="label acc__label">choose a place</h2>
+    {
+      domains.map(({ data }, i) => (
+        <Disclosure heading={data.name} sub={data.subtitle} group="domains" open={i === 0}>
+          <p class="acc__what">{data.whatWeDo}</p>
+          <ul class="acc__list">
+            {data.contributions.map((c) => (
+              <li>
+                <strong>{c.title}</strong>
+                <span>{c.description}</span>
+              </li>
+            ))}
+          </ul>
+          <div class="acc__cta">
+            <a class="btn" href={data.joinLink} target="_blank" rel="noopener noreferrer">
+              Join {data.name}
+            </a>
+            <a class="btn btn--ghost" href={`${base}domains/${data.id}/`}>Explore {data.name}</a>
+            <span class="acc__hours" data-hours-for={data.id} hidden={!data.hoursPerWeek}>{data.hoursPerWeek} a week</span>
+            {!data.hoursPerWeek && <Needs>NEEDS COPY: hours per week</Needs>}
+          </div>
+          <p class="acc__heads" data-heads-for={data.id} hidden={headsFor(data.id).length === 0}>
+            {headsFor(data.id).length === 1 ? 'Head' : 'Heads'}: {headsFor(data.id).join(', ')}
+          </p>
+        </Disclosure>
+      ))
+    }
+  </section>
+</BaseLayout>
+
+<script>
+  // Live heads and hours from the Sheet.
+  import { onLive } from '../../lib/live/read';
+  onLive((d) => {
+    for (const p of Array.from(document.querySelectorAll<HTMLElement>('[data-heads-for]'))) {
+      if (!d.team) break;
+      const names = d.team.filter((m) => m.domain === p.dataset.headsFor && !m.hidden).map((m) => m.name);
+      p.textContent = `${names.length === 1 ? 'Head' : 'Heads'}: ${names.join(', ')}`;
+      p.hidden = names.length === 0;
+    }
+    for (const h of Array.from(document.querySelectorAll<HTMLElement>('[data-hours-for]'))) {
+      const v = d.domains?.find((x) => x.domain === h.dataset.hoursFor)?.hours;
+      if (!v) continue;
+      h.textContent = /week/i.test(v) ? v : `${v} a week`;
+      h.hidden = false;
+      h.parentElement?.querySelectorAll('.needs').forEach((n) => n.remove());
+    }
+  });
+</script>
+
+<style>
+  .head {
+    max-width: var(--container-wide);
+    margin: 0 auto;
+    padding: var(--space-9) var(--gutter) var(--space-7);
+  }
+  .head .label {
+    display: block;
+    margin-bottom: var(--space-5);
+  }
+  .head h1 {
+    font-size: var(--text-h1);
+    letter-spacing: -0.035em;
+    color: var(--teal);
+    max-width: 12ch;
+  }
+  .head__lead {
+    margin-top: var(--space-5);
+    font-size: var(--text-lead);
+    color: var(--text-muted);
+    max-width: 46ch;
+  }
+
+  .strip {
+    max-width: var(--container-wide);
+    margin: 0 auto var(--space-9);
+    padding: 0 var(--gutter);
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: clamp(0.75rem, 2vw, 1.75rem);
+  }
+  .strip > div {
+    aspect-ratio: 1;
+    --mat: 6px;
+    --ux: 6px;
+    --uy: 7px;
+  }
+
+  .belief {
+    max-width: var(--container-wide);
+    margin: 0 auto;
+    padding: 0 var(--gutter);
+  }
+  .belief__in {
+    padding: clamp(2.5rem, 7vw, 5.5rem);
+    box-shadow: var(--lift-2);
+  }
+  .belief__label {
+    color: var(--mark-text);
+    margin-bottom: var(--space-7);
+  }
+  .belief__mv {
+    display: flex;
+    gap: var(--space-8);
+    flex-wrap: wrap;
+  }
+  .belief__mv > div {
+    flex: 1;
+    min-width: 240px;
+  }
+  .belief__k {
+    font-size: var(--text-small);
+    color: var(--mark);
+    font-weight: 700;
+    font-family: var(--font-display);
+    margin-bottom: var(--space-3);
+  }
+  .belief__stmt {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: var(--text-h3);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+  }
+  .belief__conn {
+    margin-top: var(--space-7);
+    padding-top: var(--space-6);
+    border-top: 1px solid var(--hair-on-deep);
+    color: var(--muted-on-deep);
+    font-size: var(--text-lead);
+    line-height: 1.6;
+    max-width: 60ch;
+  }
+
+  .acc {
+    max-width: var(--container-wide);
+    margin: 0 auto;
+    padding: var(--space-9) var(--gutter) var(--space-10);
+  }
+  .acc__label {
+    display: block;
+    margin-bottom: var(--space-5);
+  }
+  .acc__what {
+    font-size: var(--text-lead);
+    line-height: 1.6;
+    color: var(--ink);
+    max-width: 62ch;
+    margin-bottom: var(--space-5);
+  }
+  .acc__list {
+    list-style: none;
+    margin: 0 0 var(--space-6);
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-4) var(--space-6);
+    max-width: 62rem;
+  }
+  .acc__list strong {
+    display: block;
+    font-family: var(--font-display);
+    font-weight: 700;
+    color: var(--teal);
+  }
+  .acc__list span {
+    color: var(--ink);
+    font-size: var(--text-small);
+  }
+  .acc__cta {
+    display: flex;
+    gap: var(--space-4);
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .acc__hours {
+    font-size: var(--text-small);
+    color: var(--ink);
+  }
+  .acc__heads {
+    margin-top: var(--space-4);
+    font-size: var(--text-small);
+    color: var(--ink);
+  }
+
+  @media (max-width: 40rem) {
+    .acc__list {
+      grid-template-columns: 1fr;
+    }
+    /* The strip is decorative; on a phone it only pushes the content down. */
+    .strip {
+      display: none;
+    }
+  }
+</style>

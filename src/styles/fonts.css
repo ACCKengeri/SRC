@@ -1,0 +1,35 @@
+/*
+  Self-hosted latin variable fonts. Files live in src/styles/fonts/ and are
+  pulled into the module graph by this stylesheet, so Astro/Vite fingerprint
+  them. No third-party font request at runtime.
+
+  - Satoshi (Fontshare, ITF Free Font License): display and UI. One clean
+    geometric grotesk for the whole interface. Weight axis 300-900.
+  - EB Garamond (SIL OFL): the reading face, scoped to prayers, scripture and
+    the Rosary reading mode. A book face for liturgical text, the way a
+    missal is set.
+*/
+
+@font-face {
+  font-family: 'Satoshi';
+  font-style: normal;
+  font-weight: 300 900;
+  font-display: swap;
+  src: url('./fonts/satoshi-variable.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'EB Garamond';
+  font-style: normal;
+  font-weight: 400 800;
+  font-display: swap;
+  src: url('./fonts/eb-garamond-variable.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'EB Garamond';
+  font-style: italic;
+  font-weight: 400 800;
+  font-display: swap;
+  src: url('./fonts/eb-garamond-italic-variable.woff2') format('woff2');
+}

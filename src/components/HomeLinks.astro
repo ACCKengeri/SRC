@@ -1,0 +1,152 @@
+---
+/*
+  The home page's links to the pages it otherwise never points at (Prayers,
+  Calendar, Media, Contact), so they can be reached from the page itself and
+  not only through the menu. Each is a paper ticket like the Rosary notice
+  under the hero: notched ends, its own paper, the page name and one plain
+  line on what it holds, and a perforated stub with the arrow. Laid a little
+  crooked, two by two; one column on phones.
+*/
+import { primaryNav } from '../lib/nav';
+
+const base = import.meta.env.BASE_URL;
+const PICK: { slug: string; paper: string; tilt: number }[] = [
+  { slug: 'prayers', paper: 'var(--seafoam)', tilt: -0.9 },
+  { slug: 'calendar', paper: 'var(--sky)', tilt: 0.7 },
+  { slug: 'media', paper: 'var(--peach)', tilt: 0.6 },
+  { slug: 'contact', paper: 'var(--butter)', tilt: -0.8 },
+];
+const links = PICK.map((p) => ({ ...p, ...primaryNav.find((n) => n.slug === p.slug)! }));
+---
+
+<section class="more" aria-labelledby="more-heading">
+  <h2 id="more-heading" class="more__h reveal">More from ACC</h2>
+  <ul class="more__grid">
+    {
+      links.map((l, i) => (
+        <li class="reveal-lay" style={`--reveal-i:${i};--lay-r:${l.tilt * 2.2}deg;--rest-r:${l.tilt}deg`}>
+          <a class="more__go ticket-shadow" href={`${base}${l.slug}/`}>
+            <span class="more__t ticket p-grain" style={`--pc:${l.paper}`}>
+              <span class="more__main">
+                <span class="more__name">{l.label}</span>
+                <span class="more__blurb">{l.blurb}</span>
+              </span>
+              <span class="more__stub perf" aria-hidden="true">
+                <span class="more__arrow">→</span>
+              </span>
+            </span>
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</section>
+
+<style>
+  .more {
+    max-width: var(--container-wide);
+    margin: 0 auto;
+    padding: var(--space-9) var(--gutter) var(--space-8);
+  }
+  .more__h {
+    margin: 0 0 var(--space-7);
+    font-size: var(--text-h2);
+    letter-spacing: -0.03em;
+    color: var(--teal);
+  }
+  .more__grid {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: clamp(1.25rem, 3vw, 2.25rem) clamp(1.25rem, 3vw, 2.5rem);
+  }
+
+  .more__go {
+    display: block;
+    height: 100%;
+    color: inherit;
+    text-decoration: none;
+    border-radius: var(--radius-xs);
+    transition: transform 0.45s var(--ease-settle);
+  }
+  .more__go:focus-visible {
+    outline: 3px solid var(--teal);
+    outline-offset: 5px;
+  }
+  .more__t {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    height: 100%;
+    background-color: var(--pc);
+  }
+  .more__main {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    padding: var(--space-6) var(--space-6) var(--space-6) var(--space-7);
+  }
+  .more__name {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(1.6rem, 2.6vw, 2.2rem);
+    line-height: 1.05;
+    letter-spacing: -0.025em;
+    color: var(--ink-strong);
+  }
+  .more__blurb {
+    color: var(--ink);
+    font-size: var(--text-body);
+    line-height: 1.45;
+    text-wrap: pretty;
+  }
+  .more__stub {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: clamp(4.25rem, 7vw, 5.5rem);
+  }
+  .more__arrow {
+    font-family: var(--font-display);
+    font-size: 1.6rem;
+    font-weight: 600;
+    color: var(--ink-strong);
+    transition: transform 0.45s var(--ease-settle);
+  }
+
+  /* pick it up: the ticket lifts and straightens, the arrow moves on */
+  .more__go:hover,
+  .more__go:focus-visible {
+    transform: translateY(-4px) rotate(calc(-1 * var(--rest-r, 0deg)));
+  }
+  .more__go:hover .more__arrow,
+  .more__go:focus-visible .more__arrow {
+    transform: translateX(5px);
+  }
+  .more__go:active {
+    transform: translateY(-1px);
+  }
+
+  @media (max-width: 48rem) {
+    .more {
+      padding: var(--space-8) var(--gutter) var(--space-7);
+    }
+    .more__grid {
+      grid-template-columns: 1fr;
+    }
+    .more__main {
+      padding: var(--space-5) var(--space-4) var(--space-5) var(--space-6);
+    }
+    .more__blurb {
+      font-size: var(--text-small);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .more__go,
+    .more__arrow {
+      transition: none;
+    }
+  }
+</style>

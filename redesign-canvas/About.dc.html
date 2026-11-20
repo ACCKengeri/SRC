@@ -1,0 +1,176 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300..800&family=Schibsted+Grotesk:wght@400..700&family=Fraunces:ital,opsz,wght@0,9..144,300..500&display=swap');
+    :root{--paper:#F6F4EF;--ink:#141210;--blue:#1E51F7;--blue-link:#1B3FC9;--blue-wash:#E7ECFB;--muted:#5C5A55;--hair:#D8D5CC}
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--paper);color:var(--ink);font-family:'Schibsted Grotesk',Arial,sans-serif;
+      font-size:17px;line-height:1.55;-webkit-font-smoothing:antialiased}
+    .disp{font-family:'Bricolage Grotesque',Arial,sans-serif;font-weight:600;line-height:1.0;letter-spacing:-0.025em;margin:0}
+    .serif{font-family:'Fraunces',Georgia,serif;font-weight:330}
+    p{margin:0} a{color:inherit;text-decoration:none}
+    .wide{max-width:1240px;margin:0 auto;padding:0 72px}
+    .read{max-width:760px;margin:0 auto;padding:0 72px}
+    .label{font-family:'Bricolage Grotesque',Arial,sans-serif;font-weight:500;font-size:14px;letter-spacing:0.03em;
+      color:var(--muted);text-transform:lowercase}
+
+    .hdr{display:flex;align-items:center;justify-content:space-between;padding:26px 72px;border-bottom:1px solid var(--hair);
+      position:sticky;top:0;background:rgba(246,244,239,0.92);backdrop-filter:blur(8px);z-index:5}
+    .hdr b{font-family:'Bricolage Grotesque',Arial,sans-serif;font-weight:700;font-size:19px;display:flex;align-items:center;gap:12px}
+    .hdr .dot{width:22px;height:22px;border:2px solid currentColor;border-radius:50%}
+    .hdr nav{display:flex;gap:28px;font-size:15px;font-weight:500}
+    .hdr nav a.on{color:var(--blue-link)}
+    .hdr .soc{display:flex;gap:16px;font-size:14px;color:var(--muted)}
+    .hdr .soc a:hover{color:var(--blue-link)}
+
+    .head{padding:110px 72px 60px;max-width:1240px;margin:0 auto}
+    .head h1{font-size:104px;letter-spacing:-0.04em;line-height:0.94}
+    .head p{margin-top:24px;font-size:20px;color:#33302c;max-width:44ch}
+    .head .label{margin:0 0 20px}
+
+    .origin{padding:80px 0 100px}
+    .origin .label{margin-bottom:26px}
+    .origin p{font-family:'Fraunces',Georgia,serif;font-weight:330;font-size:23px;line-height:1.62;margin-bottom:26px;color:#2a2622}
+    .origin p:first-of-type{font-size:27px;color:var(--ink)}
+
+    .mv{background:var(--ink);color:var(--paper);padding:110px 72px}
+    .mv .in{max-width:1240px;margin:0 auto;display:flex;gap:80px;flex-wrap:wrap}
+    .mv > .in > div{flex:1;min-width:280px;border-top:2px solid var(--blue);padding-top:26px}
+    .mv .k{font-size:13px;letter-spacing:0.08em;text-transform:uppercase;color:rgba(246,244,239,0.5);margin-bottom:16px;font-weight:600}
+    .mv h2{font-size:52px;letter-spacing:-0.025em;line-height:1.03}
+
+    .team{padding:110px 0 120px}
+    .team > .wide > .lab{margin-bottom:6px}
+    .team h2{font-size:56px;letter-spacing:-0.03em;margin:0 0 10px}
+    .team .caveat{border:1px dashed var(--muted);color:var(--muted);font-size:12px;padding:3px 9px;border-radius:3px;display:inline-block;margin-bottom:50px}
+    .tier{margin-bottom:56px}
+    .tier h3{font-family:'Bricolage Grotesque',Arial,sans-serif;font-weight:500;font-size:14px;letter-spacing:0.03em;
+      text-transform:lowercase;color:var(--muted);margin:0 0 24px;padding-bottom:12px;border-bottom:1px solid var(--hair)}
+    .roster{display:grid;grid-template-columns:repeat(5,1fr);gap:28px}
+    .p{text-align:center}
+    .p .pic,.p .mono{width:100%;aspect-ratio:1;border-radius:50%;object-fit:cover;filter:grayscale(0.15) contrast(1.05);display:block}
+    .p .mono{background:var(--blue-wash);color:var(--blue-link);display:flex;align-items:center;justify-content:center;
+      font-family:'Bricolage Grotesque',Arial,sans-serif;font-weight:600;font-size:30px}
+    .p .nm{font-family:'Bricolage Grotesque',Arial,sans-serif;font-weight:600;font-size:16px;margin:14px 0 3px;letter-spacing:-0.01em}
+    .p .rl{color:var(--muted);font-size:13px}
+
+    .quote{position:relative;background:radial-gradient(80% 130% at 50% 0%,rgba(30,81,247,0.16),transparent 62%),var(--ink);
+      color:var(--paper);padding:160px 72px;text-align:center}
+    .quote q{font-family:'Bricolage Grotesque',Arial,sans-serif;font-weight:500;font-size:60px;letter-spacing:-0.03em;
+      line-height:1.12;quotes:none;display:block;max-width:16ch;margin:0 auto;text-wrap:balance}
+
+    .ft{background:var(--ink);color:var(--paper);padding:80px 72px 40px}
+    .ft .wm{font-family:'Bricolage Grotesque',Arial,sans-serif;font-weight:700;font-size:40px;letter-spacing:-0.02em;
+      padding-bottom:28px;border-bottom:1px solid rgba(246,244,239,0.18)}
+    .ft .cols{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:40px;padding:36px 0}
+    .ft h4{font-size:13px;letter-spacing:0.08em;text-transform:uppercase;color:rgba(246,244,239,0.5);margin:0 0 14px;font-weight:600}
+    .ft a,.ft p{color:rgba(246,244,239,0.82);font-size:14.5px;line-height:1.7;display:block}
+    .ft .bot{border-top:1px solid rgba(246,244,239,0.18);padding-top:22px;color:rgba(246,244,239,0.5);font-size:13px}
+  </style>
+</helmet>
+<div>
+  <header class="hdr">
+    <b><span class="dot"></span> ACC</b>
+    <nav><a>Home</a><a class="on">About</a><a>Domains</a><a>Prayers</a><a>Calendar</a><a>Media</a><a>Contact</a></nav>
+    <div class="soc"><a>Instagram</a><a>WhatsApp</a></div>
+  </header>
+
+  <section class="head">
+    <div class="label">about acc</div>
+    <h1 class="disp">A family on<br>campus.</h1>
+    <p>The Christian student community at CHRIST (Deemed to be University), centred on the Kengeri campus and the Chapel of St. Kuriakose Elias Chavara.</p>
+  </section>
+
+  <section class="origin read">
+    <div class="label">how we began</div>
+    <p>Association of Christian Christites is a community of all Christian students studying in Christ (Deemed To Be University). We spread the message of Jesus, encourage fellowship, and support each other in leading fulfilling Christian lives, striving to make a meaningful difference in the world.</p>
+    <p>ACC creates a strong bond of friendship and community among students. Our core vision is to build a supportive, faith-filled atmosphere on campus that glorifies God. We organise regular activities, including Holy Mass, Leadership Training Programmes, spiritual retreats, cultural fests, feast celebrations, outreach initiatives, and daily intercessory prayers. The ACC community includes over 4,500 members spanning five campuses.</p>
+    <p>Every day, members meet at the Chapel of St. Kuriakose Elias Chavara to pray together for our university, the student community, the world, and special intentions. A monthly Holy Mass is organised on the First Friday of every month, prepared cooperatively by students from various academic departments.</p>
+    <p><span style="border:1px dashed var(--muted);color:var(--muted);font-size:12px;padding:3px 9px;border-radius:3px">NEEDS COPY: ACC founding story / year</span></p>
+  </section>
+
+  <section class="mv">
+    <div class="in">
+      <div><p class="k">Mission</p><h2 class="disp">Following Christ,<br>Changing Lives</h2></div>
+      <div><p class="k">Vision</p><h2 class="disp">Family and<br>Fellowship</h2></div>
+    </div>
+  </section>
+
+  <section class="team">
+    <div class="wide">
+      <p class="label">who runs it</p>
+      <h2 class="disp">The core team</h2>
+      <span class="caveat">NEEDS VERIFICATION: roster carried from last year — to be confirmed before this ships</span>
+
+      <div class="tier">
+        <h3>coordinators</h3>
+        <div class="roster">
+          <div class="p"><img class="pic" src="team-shijin.jpg" alt="Fr. Shijin PJ CMI"><p class="nm">Fr. Shijin PJ CMI</p><p class="rl">Faculty Coordinator</p></div>
+          <div class="p"><span class="mono">JG</span><p class="nm">Jerin Geo Jacob</p><p class="rl">Faculty Coordinator</p></div>
+          <div class="p"><span class="mono">JC</span><p class="nm">Jincy Cherian</p><p class="rl">Faculty Coordinator</p></div>
+        </div>
+      </div>
+
+      <div class="tier">
+        <h3>student coordinators</h3>
+        <div class="roster">
+          <div class="p"><img class="pic" src="team-edwin.jpg" alt="Edwin Jose Cyril"><p class="nm">Edwin Jose Cyril</p><p class="rl">Student Coordinator</p></div>
+          <div class="p"><img class="pic" src="team-cherry.jpg" alt="Cherry Rose Prakash"><p class="nm">Cherry Rose Prakash</p><p class="rl">Student Coordinator</p></div>
+        </div>
+      </div>
+
+      <div class="tier">
+        <h3>domain heads</h3>
+        <div class="roster">
+          <div class="p"><img class="pic" src="team-teresa.jpg" alt="Teresa Jose"><p class="nm">Teresa Jose</p><p class="rl">Animation</p></div>
+          <div class="p"><img class="pic" src="team-alphy.jpg" alt="Alphy Jose"><p class="nm">Alphy Jose</p><p class="rl">Liturgy</p></div>
+          <div class="p"><img class="pic" src="team-manjeera.jpg" alt="Manjeera Manoj"><p class="nm">Manjeera Manoj</p><p class="rl">Outreach</p></div>
+          <div class="p"><img class="pic" src="team-joel.jpg" alt="Joel Mathew"><p class="nm">Joel Mathew</p><p class="rl">Audio &amp; Visual — Choir</p></div>
+          <div class="p"><img class="pic" src="team-alin.jpg" alt="Alin Teresa Jose"><p class="nm">Alin Teresa Jose</p><p class="rl">Audio &amp; Visual — Dance</p></div>
+          <div class="p"><img class="pic" src="team-ashin.jpg" alt="Ashin Shibu Joseph"><p class="nm">Ashin Shibu Joseph</p><p class="rl">Audio &amp; Visual — Theatre</p></div>
+          <div class="p"><img class="pic" src="team-akhilesh.jpg" alt="Akhilesh Kumar"><p class="nm">Akhilesh Kumar</p><p class="rl">Media &amp; Communication</p></div>
+          <div class="p"><img class="pic" src="team-steeva.jpg" alt="Steeva Xavier"><p class="nm">Steeva Xavier</p><p class="rl">Media &amp; Communication</p></div>
+          <div class="p"><img class="pic" src="team-elvin.jpg" alt="Elvin Davis"><p class="nm">Elvin Davis</p><p class="rl">Logistics &amp; Hospitality</p></div>
+        </div>
+      </div>
+
+      <div class="tier">
+        <h3>department heads</h3>
+        <div class="roster">
+          <div class="p"><img class="pic" src="team-williams.jpg" alt="Williams Palathingal"><p class="nm">Williams Palathingal</p><p class="rl">Engineering</p></div>
+          <div class="p"><img class="pic" src="team-alex.jpg" alt="Alex OS"><p class="nm">Alex OS</p><p class="rl">Engineering</p></div>
+          <div class="p"><img class="pic" src="team-dona.jpg" alt="Dona Milton"><p class="nm">Dona Milton</p><p class="rl">Architecture</p></div>
+          <div class="p"><img class="pic" src="team-karishma.jpg" alt="Karishma Devasia"><p class="nm">Karishma Devasia</p><p class="rl">Architecture</p></div>
+          <div class="p"><img class="pic" src="team-ruben.jpg" alt="Reuben Richards"><p class="nm">Reuben Richards</p><p class="rl">Psychology</p></div>
+          <div class="p"><span class="mono">ES</span><p class="nm">Elaine Elsa Siby</p><p class="rl">Psychology</p></div>
+          <div class="p"><img class="pic" src="team-melvin.jpg" alt="Melvin Kochummen Biju"><p class="nm">Melvin Kochummen Biju</p><p class="rl">BBA</p></div>
+          <div class="p"><img class="pic" src="team-soshan.jpg" alt="Soshan Ramung"><p class="nm">Soshan Ramung</p><p class="rl">BBA</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="quote">
+    <q>We Cry, We Pray, We Rejoice Together, We Are ACC!</q>
+  </section>
+
+  <footer class="ft">
+    <div class="wm">Association of Christian Christites</div>
+    <div class="cols">
+      <div><h4>The chapel</h4><p>Chapel of St. Kuriakose Elias Chavara<br>CHRIST (Deemed to be University)<br>Kengeri Campus, Bengaluru 560074</p><a href="#">Open in Maps</a></div>
+      <div><h4>Pages</h4><a>About</a><a>Domains</a><a>Prayers</a><a>Calendar</a><a>Media</a><a>Contact</a></div>
+      <div><h4>Come along</h4><a href="#">Join the WhatsApp group</a><a href="#">@acc_kengeri</a><a href="#">acc.kengeri@christuniversity.in</a></div>
+    </div>
+    <div class="bot">© 2026 Association of Christian Christites</div>
+  </footer>
+</div>
+</x-dc>
+</body>
+</html>

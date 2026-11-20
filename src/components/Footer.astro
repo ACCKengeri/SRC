@@ -1,0 +1,266 @@
+---
+import { getCollection } from 'astro:content';
+import { Image } from 'astro:assets';
+import { primaryNav } from '../lib/nav';
+import PaperEdge from './PaperEdge.astro';
+import accLogo from '../assets/brand/acc-logo.png';
+import christLogo from '../assets/brand/christ-university.png';
+
+const base = import.meta.env.BASE_URL;
+const year = new Date().getFullYear();
+
+const campuses = (await getCollection('campuses')).sort((a, b) =>
+  a.data.primary === b.data.primary ? 0 : a.data.primary ? -1 : 1
+);
+const countWords = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten'];
+const campusLine = `${countWords[campuses.length] ?? campuses.length} campuses: ${campuses.map((c) => c.data.name).join(', ')}`;
+const links = primaryNav.map((l) => ({ href: `${base}${l.slug}/`, label: l.label }));
+---
+
+<PaperEdge layers={['var(--seafoam)', 'var(--teal-band)', 'var(--teal-deep)']} seed={9} class="ft-edge" />
+<footer class="ft on-deep p-grain">
+  <div class="ft__top">
+    <Image class="ft__acc" src={accLogo} alt="Association of Christian Christites" widths={[360, 720]} width={720} sizes="360px" />
+    <a class="ft__cu" href="https://christuniversity.in/" target="_blank" rel="noopener noreferrer">
+      <Image src={christLogo} alt="CHRIST (Deemed to be University), Bangalore" widths={[240, 480]} width={480} sizes="240px" />
+    </a>
+  </div>
+
+  <div class="ft__rule reveal" aria-hidden="true"></div>
+
+  <div class="ft__cols">
+    <div>
+      <p class="ft__h">The chapel</p>
+      <p>Chapel of St. Kuriakose Elias Chavara</p>
+      <p>CHRIST (Deemed to be University)</p>
+      <a href="https://g.co/kgs/7q6tTKC" target="_blank" rel="noopener noreferrer"
+        >Kengeri Campus, Bengaluru 560074</a
+      >
+    </div>
+
+    <div>
+      <p class="ft__h">Pages</p>
+      <nav aria-label="Footer">
+        <ul>
+          {links.map((link) => <li><a href={link.href}>{link.label}</a></li>)}
+        </ul>
+      </nav>
+    </div>
+
+    <div>
+      <p class="ft__h">Come along</p>
+      <ul>
+        <li>
+          <a
+            href="https://chat.whatsapp.com/KoTpbOt0HZB8Uq0PbNUqrj"
+            data-live-href="whatsapp"
+            target="_blank"
+            rel="noopener noreferrer">WhatsApp group</a
+          >
+        </li>
+        <li>
+          <a href="mailto:acc.kengeri@christuniversity.in" data-live-mailto="email" data-live-text="email">acc.kengeri@christuniversity.in</a>
+        </li>
+      </ul>
+      <p class="ft__h ft__h--tight">Campuses on Instagram</p>
+      <ul class="ft__campuses">
+        {
+          campuses.map(({ data }) => (
+            <li>
+              <a href={data.instagram} data-live-href={`instagram_${data.id}`} target="_blank" rel="noopener noreferrer">
+                {data.name}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </div>
+
+  <div class="ft__rule reveal" aria-hidden="true"></div>
+
+  <div class="ft__bot">
+    <p class="ft__copy">&copy; {year} Association of Christian Christites</p>
+    <p class="ft__copy">{campusLine}</p>
+    <button class="ft__theme" id="theme-switch" type="button" aria-label="Switch to Christmas night">
+      <span class="ft__glyph" aria-hidden="true"></span>
+      <span class="ft__theme-day">Night</span>
+      <span class="ft__theme-night">Day</span>
+    </button>
+  </div>
+</footer>
+
+<script>
+  import { getTheme, setTheme } from '../scripts/theme';
+  const sw = document.getElementById('theme-switch');
+  const label = () =>
+    sw?.setAttribute('aria-label', getTheme() === 'night' ? 'Switch back to day' : 'Switch to Christmas night');
+  label();
+  document.addEventListener('acc:theme', label);
+  sw?.addEventListener('click', () => {
+    const r = sw.getBoundingClientRect();
+    setTheme(getTheme() === 'night' ? 'day' : 'night', { x: r.left + r.width / 2, y: r.top + r.height / 2 });
+  });
+</script>
+
+<style>
+  .ft-edge {
+    margin-top: var(--space-9);
+  }
+  .ft {
+    background-color: var(--teal-deep);
+    color: var(--on-deep);
+    padding: var(--space-7) var(--gutter) var(--space-6);
+    /* overlap the paper edge by a hair and paint over its antialiased bottom row */
+    position: relative;
+    margin-top: -2px;
+  }
+  .ft > * {
+    max-width: calc(var(--container-wide) - 2 * var(--gutter));
+    margin-inline: auto;
+  }
+  .ft__top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--space-6);
+    margin-bottom: var(--space-7);
+    margin-inline: auto;
+  }
+  .ft :global(.ft__acc) {
+    width: min(22rem, 100%);
+    height: auto;
+  }
+  .ft__cu {
+    display: block;
+    opacity: 0.9;
+    transition: opacity var(--duration-quick) var(--ease-quick);
+  }
+  .ft__cu:hover {
+    opacity: 1;
+  }
+  .ft__cu :global(img) {
+    width: 13rem;
+    height: auto;
+  }
+  .ft__rule {
+    height: 1px;
+    background: var(--hair-on-deep);
+    transform-origin: left;
+    transform: scaleX(0);
+    transition: transform 0.9s var(--ease-soft);
+  }
+  .ft__rule.is-in {
+    transform: scaleX(1);
+  }
+  :root.no-js .ft__rule {
+    transform: scaleX(1);
+  }
+
+  .ft__cols {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr 1.2fr;
+    gap: var(--space-6);
+    padding: var(--space-7) 0;
+  }
+  .ft__h {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: var(--text-micro);
+    letter-spacing: 0.02em;
+    color: var(--mark);
+    margin: 0 0 var(--space-4);
+  }
+  .ft__h--tight {
+    margin-top: var(--space-5);
+  }
+  .ft__cols p,
+  .ft__cols a {
+    color: var(--muted-on-deep);
+    font-size: var(--text-small);
+    line-height: 1.7;
+    display: block;
+  }
+  .ft__cols a:hover {
+    color: var(--on-deep);
+  }
+  .ft__cols ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .ft__campuses {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-4);
+  }
+  .ft__campuses a {
+    font-size: var(--text-micro);
+  }
+
+  .ft__bot {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: var(--space-2) var(--space-5);
+    padding-top: var(--space-4);
+  }
+  .ft__copy {
+    font-size: var(--text-micro);
+    color: var(--muted-on-deep);
+  }
+
+  @media (max-width: 56rem) {
+    .ft__cols {
+      grid-template-columns: 1fr;
+      gap: var(--space-5);
+    }
+  }
+
+  /* Night and day: a small pill, a moon by day (it switches to night) and
+     a sun by night. */
+  .ft__theme {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-3);
+    min-height: 44px;
+    padding: 0 var(--space-5) 0 var(--space-4);
+    border: 1px solid var(--hair-on-deep);
+    border-radius: var(--radius-pill);
+    background: none;
+    color: var(--on-deep);
+    font: inherit;
+    font-size: var(--text-small);
+    font-weight: 600;
+    cursor: pointer;
+    transition: border-color var(--duration-quick) var(--ease-quick);
+  }
+  .ft__theme:hover {
+    border-color: var(--gold);
+  }
+  .ft__glyph {
+    position: relative;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--gold);
+    /* a crescent: the disc with a bite out of it */
+    -webkit-mask: radial-gradient(circle at 75% 30%, transparent 5px, #000 5.5px);
+    mask: radial-gradient(circle at 75% 30%, transparent 5px, #000 5.5px);
+  }
+  .ft__theme-night {
+    display: none;
+  }
+  :global([data-theme='night']) .ft__theme-day {
+    display: none;
+  }
+  :global([data-theme='night']) .ft__theme-night {
+    display: inline;
+  }
+  :global([data-theme='night']) .ft__glyph {
+    -webkit-mask: none;
+    mask: none;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--gold) 30%, transparent);
+  }
+</style>

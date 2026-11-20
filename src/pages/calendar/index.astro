@@ -1,0 +1,713 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Needs from '../../components/Needs.astro';
+import {
+  buildMonthGrid,
+  monthLabel,
+  sortedByDate,
+  formatAgendaDate,
+  displayTime,
+  categoryLabel,
+  type CalEvent,
+  type EventCategory,
+} from '../../lib/calendar';
+
+const feastEntries = await getCollection('feasts');
+const events: CalEvent[] = feastEntries.map((f) => ({
+  id: f.data.id,
+  title: f.data.title,
+  date: f.data.date,
+  time: f.data.time,
+  description: f.data.description,
+  category: f.data.category,
+}));
+
+// Build-time render is only the no-JS fallback. The client script redraws the
+// month for the visitor's real "today" and hides past agenda items on load.
+const today = new Date();
+const grid = buildMonthGrid(today, events);
+const agenda = sortedByDate(events);
+
+const categories: EventCategory[] = ['feast', 'event', 'liturgy', 'outreach'];
+const weekdayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+const frequencyLabel: Record<string, string> = {
+  daily: 'Daily',
+  monthly: 'First Friday',
+  weekly: 'Weekly',
+  seasonal: 'In Lent',
+};
+const services = (await getCollection('services')).sort((a, b) => a.data.order - b.data.order);
+
+const payload = JSON.stringify(events).replace(/<\//g, '<\\/');
+---
+
+<BaseLayout
+  title="Calendar | Association of Christian Christites"
+  description="Feast days and ACC events: a month grid and an agenda, filterable by category, with an .ics download for every event."
+>
+  <section class="head">
+    <h1>Calendar</h1>
+    <p class="head__lead">
+      Feast days, ACC events, liturgy, and outreach. Filter below, or add anything straight to
+      your phone's calendar.
+    </p>
+  </section>
+
+  <section class="rhythm" aria-labelledby="rhythm-heading">
+    <div class="rhythm__in sheet p-deep on-deep">
+      <h2 id="rhythm-heading" class="label rhythm__label">the week, as we keep it</h2>
+      <div class="rhythm__strip">
+        {
+          services.map(({ data }) => (
+            <div class="rhythm__s">
+              <p class="rhythm__t">{frequencyLabel[data.frequency] ?? data.frequency}</p>
+              <p class="rhythm__w">{data.what}</p>
+              <p class="rhythm__l">{data.time}</p>
+              {data.where && <p class="rhythm__l rhythm__l--sub">{data.where}</p>}
+              {data.note && <p class="rhythm__l rhythm__l--sub">{data.note}</p>}
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="controls">
+    <div class="view-toggle" role="tablist" aria-label="Calendar view">
+      <button class="view-toggle__btn is-active" id="view-month" type="button" role="tab" aria-selected="true">
+        Month
+      </button>
+      <button class="view-toggle__btn" id="view-agenda" type="button" role="tab" aria-selected="false">
+        Agenda
+      </button>
+    </div>
+    <div class="filters" id="filters">
+      {
+        categories.map((c) => (
+          <button class="filter-chip is-active" data-category={c} type="button" aria-pressed="true">
+            {categoryLabel[c]}
+          </button>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="month-view" id="month-view">
+    <div class="month-nav">
+      <button class="month-nav__btn" id="month-prev" type="button" aria-label="Previous month">&larr;</button>
+      <p class="month-nav__label" id="month-label">{monthLabel(today)}</p>
+      <button class="month-nav__btn" id="month-next" type="button" aria-label="Next month">&rarr;</button>
+      <span class="month-nav__tint"><span class="month-nav__swatch" aria-hidden="true"></span>Lent and Advent</span>
+    </div>
+    <div class="month-grid sheet">
+      <div class="month-grid__weekdays">
+        {weekdayLabels.map((w) => <span>{w}</span>)}
+      </div>
+      <div class="month-grid__days" id="month-days">
+        {
+          grid.map((day) => (
+            <div class:list={['day-cell', { 'day-cell--out': !day.inMonth, 'day-cell--today': day.isToday, [`day-cell--${day.season}`]: !!day.season }]}>
+              <span class="day-cell__number">{day.dayNumber}</span>
+              {day.events.slice(0, 2).map((e) => (
+                <span class="day-cell__event">{e.title}</span>
+              ))}
+              {day.events.length > 2 && <span class="day-cell__more">+{day.events.length - 2} more</span>}
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="agenda-view" id="agenda-view" hidden>
+    <h2 class="label agenda-view__label">upcoming</h2>
+    <div class="agenda-list cast" id="agenda-list">
+      {
+        agenda.length > 0 ? (
+          agenda.map((e) => (
+            <div class="agenda-item ticket p-grain" data-category={e.category} data-date={e.date}>
+              <span class="agenda-item__date">{formatAgendaDate(e.date)}</span>
+              <div class="agenda-item__body">
+                <p class="agenda-item__title">{e.title}</p>
+                <p class="agenda-item__meta">
+                  {categoryLabel[e.category]}{displayTime(e.time) && `, ${displayTime(e.time)}`}
+                </p>
+                <p class="agenda-item__desc">{e.description}</p>
+              </div>
+              <button class="agenda-item__ics perf" data-ics-title={e.title} data-ics-date={e.date} data-ics-desc={e.description} type="button">
+                Add to calendar
+              </button>
+            </div>
+          ))
+        ) : (
+          <p class="agenda-empty">Nothing upcoming right now.</p>
+        )
+      }
+    </div>
+    <p class="agenda-more">More dates are added as each semester is planned.</p>
+    <Needs class="agenda-needs">NEEDS DATA: 2026 dates for named ACC events (Bereshith, Transcend, the Inaugural Mass) and dated Liturgy / Outreach activities</Needs>
+  </section>
+</BaseLayout>
+
+<script type="application/json" id="calendar-data" is:inline set:html={payload} />
+
+<script>
+  import { buildMonthGrid, monthLabel, isoDay, sortedByDate, formatAgendaDate, displayTime, categoryLabel, type CalEvent, type EventCategory } from '../../lib/calendar';
+  import { downloadIcs } from '../../lib/ics';
+  import { onLive } from '../../lib/live/read';
+  import { el } from '../../lib/live/dom';
+  import { slug, type LiveDate } from '../../lib/live/schema';
+
+  const dataEl = document.getElementById('calendar-data')!;
+  let events: CalEvent[] = JSON.parse(dataEl.textContent || '[]');
+
+  let cursor = new Date();
+  cursor.setDate(1);
+  const activeCategories = new Set<EventCategory>(['feast', 'event', 'liturgy', 'outreach']);
+
+  const monthDaysEl = document.getElementById('month-days')!;
+  const monthLabelEl = document.getElementById('month-label')!;
+  const filterButtons = Array.from(document.querySelectorAll<HTMLButtonElement>('.filter-chip'));
+  const listEl = document.getElementById('agenda-list')!;
+  // built items take their styling from one the build made (or the list itself)
+  const itemLike = listEl.querySelector('.agenda-item') ?? listEl;
+
+  function visibleEvents(): CalEvent[] {
+    return events.filter((e) => activeCategories.has(e.category));
+  }
+
+  function renderMonth() {
+    monthLabelEl.textContent = monthLabel(cursor);
+    const grid = buildMonthGrid(cursor, visibleEvents());
+    monthDaysEl.innerHTML = '';
+    for (const day of grid) {
+      const cell = document.createElement('div');
+      cell.className = 'day-cell';
+      if (!day.inMonth) cell.classList.add('day-cell--out');
+      if (day.isToday) cell.classList.add('day-cell--today');
+      if (day.season) cell.classList.add(`day-cell--${day.season}`);
+
+      const number = document.createElement('span');
+      number.className = 'day-cell__number';
+      number.textContent = String(day.dayNumber);
+      cell.appendChild(number);
+
+      for (const e of day.events.slice(0, 2)) {
+        const ev = document.createElement('span');
+        ev.className = 'day-cell__event';
+        ev.textContent = e.title;
+        cell.appendChild(ev);
+      }
+      if (day.events.length > 2) {
+        const more = document.createElement('span');
+        more.className = 'day-cell__more';
+        more.textContent = `+${day.events.length - 2} more`;
+        cell.appendChild(more);
+      }
+      monthDaysEl.appendChild(cell);
+    }
+  }
+
+  // The page is static, so "upcoming" is decided here, in the visitor's own
+  // timezone, not at build time.
+  function renderAgenda() {
+    const todayIso = isoDay(new Date());
+    const ahead = sortedByDate(events).filter((e) => e.date >= todayIso);
+    const shown = ahead.filter((e) => activeCategories.has(e.category));
+    const items: HTMLElement[] = shown.map((e) => {
+      const item = el('div', itemLike, 'agenda-item ticket p-grain');
+      item.dataset.category = e.category;
+      item.dataset.date = e.date;
+      const body = el('div', itemLike, 'agenda-item__body');
+      const time = displayTime(e.time);
+      body.append(
+        el('p', itemLike, 'agenda-item__title', e.title),
+        el('p', itemLike, 'agenda-item__meta', `${categoryLabel[e.category]}${time ? `, ${time}` : ''}`),
+      );
+      if (e.description) body.appendChild(el('p', itemLike, 'agenda-item__desc', e.description));
+      const ics = el('button', itemLike, 'agenda-item__ics perf', 'Add to calendar');
+      ics.type = 'button';
+      ics.addEventListener('click', () => downloadIcs({ title: e.title, date: e.date, description: e.description }));
+      item.append(el('span', itemLike, 'agenda-item__date', formatAgendaDate(e.date)), body, ics);
+      return item;
+    });
+    if (!items.length) items.push(el('p', listEl, 'agenda-empty', ahead.length ? 'Nothing in this category right now.' : 'Nothing upcoming right now.'));
+    listEl.replaceChildren(...items);
+  }
+
+  filterButtons.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const cat = btn.dataset.category as EventCategory;
+      if (activeCategories.has(cat)) {
+        activeCategories.delete(cat);
+        btn.classList.remove('is-active');
+        btn.setAttribute('aria-pressed', 'false');
+      } else {
+        activeCategories.add(cat);
+        btn.classList.add('is-active');
+        btn.setAttribute('aria-pressed', 'true');
+      }
+      renderMonth();
+      renderAgenda();
+    });
+  });
+
+  // Redraw straight away so the grid shows the visitor's month and today,
+  // not whatever day the site happened to be built.
+  renderMonth();
+  renderAgenda();
+
+  document.getElementById('month-prev')?.addEventListener('click', () => {
+    cursor.setMonth(cursor.getMonth() - 1);
+    renderMonth();
+  });
+  document.getElementById('month-next')?.addEventListener('click', () => {
+    cursor.setMonth(cursor.getMonth() + 1);
+    renderMonth();
+  });
+
+  const monthView = document.getElementById('month-view')!;
+  const agendaView = document.getElementById('agenda-view')!;
+  const viewMonthBtn = document.getElementById('view-month')!;
+  const viewAgendaBtn = document.getElementById('view-agenda')!;
+
+  function showView(view: 'month' | 'agenda') {
+    monthView.hidden = view !== 'month';
+    agendaView.hidden = view !== 'agenda';
+    viewMonthBtn.classList.toggle('is-active', view === 'month');
+    viewMonthBtn.setAttribute('aria-selected', String(view === 'month'));
+    viewAgendaBtn.classList.toggle('is-active', view === 'agenda');
+    viewAgendaBtn.setAttribute('aria-selected', String(view === 'agenda'));
+  }
+
+  viewMonthBtn.addEventListener('click', () => showView('month'));
+  viewAgendaBtn.addEventListener('click', () => showView('agenda'));
+
+  if (window.matchMedia('(max-width: 40rem)').matches) {
+    showView('agenda');
+  }
+
+  /* ---- live dates and the weekly rhythm from the Sheet ---- */
+
+  // "Every year" dates repeat from last year to next year.
+  function expand(rows: LiveDate[]): CalEvent[] {
+    const y = new Date().getFullYear();
+    const out = new Map<string, CalEvent>();
+    for (const r of rows) {
+      const years = r.yearly ? [y - 1, y, y + 1] : [Number(r.date.slice(0, 4))];
+      for (const yr of years) {
+        const date = `${yr}${r.date.slice(4)}`;
+        if (date.endsWith('02-29') && new Date(yr, 1, 29).getMonth() !== 1) continue;
+        const id = `${date}-${slug(r.title)}`;
+        out.set(id, { id, date, title: r.title, time: r.time, description: r.description, category: r.category });
+      }
+    }
+    return [...out.values()];
+  }
+
+  const strip = document.querySelector<HTMLElement>('.rhythm__strip');
+  const stripLike = strip?.querySelector('.rhythm__s') ?? strip ?? null;
+
+  onLive((d) => {
+    if (d.calendar) {
+      events = expand(d.calendar);
+      renderMonth();
+      renderAgenda();
+      document.querySelectorAll('.agenda-needs').forEach((n) => n.remove());
+    }
+    if (d.services && strip) {
+      strip.replaceChildren(
+        ...d.services.map((sv) => {
+          const box = el('div', stripLike, 'rhythm__s');
+          box.append(el('p', stripLike, 'rhythm__t', sv.when), el('p', stripLike, 'rhythm__w', sv.what), el('p', stripLike, 'rhythm__l', sv.time));
+          if (sv.where) box.appendChild(el('p', stripLike, 'rhythm__l rhythm__l--sub', sv.where));
+          if (sv.note) box.appendChild(el('p', stripLike, 'rhythm__l rhythm__l--sub', sv.note));
+          return box;
+        }),
+      );
+    }
+  });
+</script>
+
+<style>
+  .head {
+    max-width: var(--container-wide);
+    margin: 0 auto;
+    padding: var(--space-9) var(--gutter) var(--space-6);
+  }
+  .head h1 {
+    font-size: var(--text-h1);
+    letter-spacing: -0.035em;
+    color: var(--teal);
+  }
+  .head__lead {
+    margin-top: var(--space-4);
+    font-size: var(--text-lead);
+    color: var(--text-muted);
+    max-width: 56ch;
+  }
+
+  .rhythm {
+    max-width: var(--container-wide);
+    margin: 0 auto;
+    padding: 0 var(--gutter);
+  }
+  /* The week's rhythm is a band of deep teal card. */
+  .rhythm__in {
+    padding: clamp(1.5rem, 4vw, 3rem);
+    box-shadow: var(--lift-2);
+  }
+  .rhythm__label {
+    display: block;
+    margin-bottom: var(--space-5);
+  }
+  .rhythm__strip {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 0;
+  }
+  .rhythm__s {
+    border-left: 1px dashed var(--hair-on-deep);
+    padding: 0 var(--space-4);
+  }
+  .rhythm__s:first-child {
+    border-left: 0;
+    padding-left: 0;
+  }
+  .rhythm__t {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: var(--text-micro);
+    color: var(--mark-text);
+  }
+  .rhythm__w {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: var(--text-body);
+    color: var(--on-deep);
+    margin: var(--space-2) 0 var(--space-1);
+  }
+  .rhythm__l {
+    font-size: var(--text-micro);
+    color: var(--on-deep);
+    line-height: 1.5;
+  }
+  .rhythm__l--sub {
+    color: var(--muted-on-deep);
+  }
+
+  .controls {
+    max-width: var(--container-wide);
+    margin: 0 auto;
+    padding: var(--space-7) var(--gutter) var(--space-5);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--space-4);
+  }
+  .view-toggle {
+    display: flex;
+    padding: 3px;
+    border: 1px solid var(--teal);
+    border-radius: var(--radius-pill);
+  }
+  .view-toggle__btn {
+    background: transparent;
+    border: 0;
+    min-height: 44px;
+    padding: 0 var(--space-5);
+    font-weight: 600;
+    font-size: var(--text-small);
+    cursor: pointer;
+    color: var(--teal);
+    border-radius: var(--radius-pill);
+    min-height: 40px;
+  }
+  .view-toggle__btn.is-active {
+    background: var(--teal);
+    color: var(--on-deep);
+  }
+  .filters {
+    display: flex;
+    gap: var(--space-2);
+    flex-wrap: wrap;
+  }
+  .filter-chip {
+    border: 1px solid var(--border);
+    min-height: 44px;
+    padding: 0 var(--space-4);
+    font-size: var(--text-small);
+    border-radius: var(--radius-pill);
+    background: transparent;
+    color: var(--ink);
+    cursor: pointer;
+  }
+  .filter-chip.is-active {
+    background: var(--teal);
+    color: var(--on-deep);
+    border-color: var(--teal);
+    font-weight: 600;
+  }
+
+  .month-view {
+    max-width: var(--container-wide);
+    margin: 0 auto;
+    padding: 0 var(--gutter) var(--space-7);
+  }
+  .month-nav {
+    display: flex;
+    align-items: center;
+    gap: var(--space-5);
+    margin-bottom: var(--space-5);
+    flex-wrap: wrap;
+  }
+  .month-nav__btn {
+    width: 44px;
+    height: 44px;
+    border: 1px solid var(--border);
+    background: transparent;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: var(--text-body);
+    color: var(--teal);
+  }
+  .month-nav__label {
+    font-family: var(--font-display);
+    font-weight: 700;
+    color: var(--teal);
+    font-size: var(--text-h3);
+    letter-spacing: -0.02em;
+  }
+  .month-nav__tint {
+    margin-left: auto;
+    font-size: var(--text-micro);
+    color: var(--text-muted);
+  }
+
+  .month-grid__weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+  }
+  .month-grid__weekdays span {
+    padding: var(--space-2) var(--space-3);
+    font-size: var(--text-micro);
+    font-weight: 600;
+    color: var(--text-muted);
+  }
+  /* The month is printed on one sheet; the days are ruled on it. */
+  .month-grid {
+    padding: clamp(0.5rem, 1.5vw, 1rem) clamp(0.5rem, 1.5vw, 1.25rem) clamp(0.75rem, 2vw, 1.25rem);
+    box-shadow: var(--lift-2);
+  }
+  .month-grid__days {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 1px;
+    background: var(--hair);
+    border: 1px solid var(--hair);
+    border-radius: var(--radius-xs);
+    overflow: hidden;
+  }
+  .month-grid__days :global(.day-cell) {
+    background: var(--sheet);
+    min-height: 7rem;
+    padding: var(--space-2) var(--space-3);
+  }
+  .month-grid__days :global(.day-cell--out) {
+    background: var(--raised);
+    color: var(--text-muted);
+  }
+  .month-grid__days :global(.day-cell__number) {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: var(--text-small);
+  }
+  /* today: a small coral circle cut out and stuck on the date */
+  .month-grid__days :global(.day-cell--today .day-cell__number) {
+    background: var(--coral);
+    color: var(--ink);
+    font-weight: 700;
+    box-shadow: 0 1px 2px rgba(11, 63, 67, 0.3);
+    width: 1.8rem;
+    height: 1.8rem;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .month-grid__days :global(.day-cell__event) {
+    display: block;
+    margin-top: var(--space-2);
+    font-size: var(--text-micro);
+    line-height: 1.35;
+    border-left: 2px solid var(--mark);
+    padding-left: var(--space-2);
+  }
+  .month-grid__days :global(.day-cell__more) {
+    display: block;
+    margin-top: var(--space-1);
+    font-size: var(--text-micro);
+    color: var(--text-muted);
+  }
+
+  .agenda-view {
+    max-width: 62rem;
+    margin: 0 auto;
+    padding: var(--space-6) var(--gutter) var(--space-10);
+  }
+  .agenda-view[hidden] {
+    display: none;
+  }
+  /* Each upcoming date is a tear-off ticket; the button sits past the perforation. */
+  .agenda-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+  .agenda-item {
+    display: flex;
+    gap: var(--space-5);
+    padding: var(--space-5) var(--space-6) var(--space-5) var(--space-7);
+    align-items: center;
+    background-color: var(--sheet);
+  }
+  .agenda-item:nth-child(4n + 2) {
+    background-color: var(--butter-wash);
+  }
+  .agenda-item:nth-child(4n + 3) {
+    background-color: var(--teal-wash);
+  }
+  .agenda-item:nth-child(4n + 4) {
+    background-color: var(--coral-wash);
+  }
+  .agenda-item[hidden] {
+    display: none;
+  }
+  .agenda-item__date {
+    flex: 0 0 8rem;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: var(--text-small);
+    color: var(--ink-strong);
+  }
+  .agenda-item__body {
+    flex: 1;
+  }
+  .agenda-item__title {
+    font-family: var(--font-display);
+    font-weight: 700;
+    color: var(--ink-strong);
+    font-size: var(--text-h4);
+  }
+  .agenda-item__meta {
+    display: inline-block;
+    margin-top: var(--space-2);
+    font-size: var(--text-micro);
+    font-weight: 600;
+    background: var(--sheet);
+    color: var(--ink-strong);
+    border-radius: var(--radius-pill);
+    padding: 0.2rem 0.7rem;
+    box-shadow: 0 0 0 1px var(--hair);
+  }
+  .agenda-item__desc {
+    margin-top: var(--space-3);
+    color: var(--ink);
+    font-size: var(--text-small);
+    max-width: 56ch;
+  }
+  .agenda-item__ics {
+    flex: 0 0 auto;
+    align-self: stretch;
+    border: 0;
+    border-left: 2px dashed color-mix(in srgb, var(--teal-deep) 30%, transparent);
+    background: transparent;
+    color: var(--ink-strong);
+    text-decoration: underline;
+    text-decoration-color: var(--coral);
+    text-decoration-thickness: 2px;
+    text-underline-offset: 0.3em;
+    min-height: 44px;
+    padding: 0 0 0 var(--space-5);
+    font-size: var(--text-small);
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: 0;
+  }
+  .agenda-view :global(.agenda-empty) {
+    color: var(--text-muted);
+  }
+
+  .month-grid__days :global(.day-cell--lent),
+  .month-grid__days :global(.day-cell--advent) {
+    background: color-mix(in srgb, var(--violet) 7%, var(--sheet));
+  }
+  .month-grid__days :global(.day-cell--out.day-cell--lent),
+  .month-grid__days :global(.day-cell--out.day-cell--advent) {
+    background: color-mix(in srgb, var(--violet) 5%, var(--raised));
+  }
+  .month-nav__swatch {
+    display: inline-block;
+    width: 0.85rem;
+    height: 0.85rem;
+    margin-right: var(--space-2);
+    vertical-align: -0.1rem;
+    background: color-mix(in srgb, var(--violet) 14%, var(--bg));
+    border: 1px solid color-mix(in srgb, var(--violet) 40%, var(--bg));
+  }
+  .agenda-view__label {
+    display: block;
+    margin-bottom: var(--space-4);
+  }
+  .agenda-more {
+    margin-top: var(--space-5);
+    font-size: var(--text-small);
+    color: var(--text-muted);
+  }
+  .agenda-view :global(.agenda-needs) {
+    margin-top: var(--space-3);
+  }
+
+  @media (max-width: 56rem) {
+    .rhythm__strip {
+      grid-template-columns: 1fr;
+      gap: var(--space-4);
+    }
+    .rhythm__s {
+      border-left: 0;
+      border-top: 1px dashed var(--hair-on-deep);
+      padding: var(--space-3) 0 0;
+    }
+    .rhythm__s:first-child {
+      border-top: 0;
+      padding-top: 0;
+    }
+  }
+
+  @media (max-width: 40rem) {
+    .month-grid__days :global(.day-cell) {
+      min-height: 4.5rem;
+    }
+    .month-grid__days :global(.day-cell__event) {
+      display: none;
+    }
+    .agenda-item {
+      flex-wrap: wrap;
+      padding: var(--space-5) var(--space-6);
+    }
+    .agenda-item__date {
+      flex: 1 0 100%;
+    }
+    .agenda-item__ics {
+      flex: 1 0 100%;
+      justify-content: flex-start;
+      text-align: left;
+      border-left: 0;
+      border-top: 2px dashed color-mix(in srgb, var(--teal-deep) 30%, transparent);
+      padding: var(--space-2) 0 0;
+    }
+  }
+</style>

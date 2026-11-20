@@ -1,0 +1,172 @@
+/*
+  ACC token layer: the single source of truth for colour, type, space,
+  radius and motion. Components reference these custom properties only; no
+  raw hex values outside this file (the 3D hero and the ribbon painter carry
+  their own copies of the paper colours, see src/scripts).
+
+  Phase 14 direction (see docs/DESIGN_NOTES.md): cut paper in teal and coral.
+  A cool aqua-white ground, sheets of slightly brighter paper laid on it, a
+  deep teal for type and buttons, and coral as the one accent. Four coloured
+  papers (seafoam, butter, sky, peach) are surfaces only. Light-only; deep
+  teal is the one dark surface. Every pairing below is contrast-checked on
+  the surface it actually renders on.
+*/
+
+:root {
+  /* ---- raw ---- */
+  --paper: #f2f6f6; /* the ground */
+  --sheet: #fbfdfc; /* a sheet of paper laid on the ground */
+  --raised: #e4eeed; /* one step off the ground */
+  --teal: #135e63; /* type, buttons, links (6.9:1 on paper, 7.3:1 on sheet) */
+  --teal-deep: #0b3f43; /* the one dark surface: footer, reading modes, lightbox */
+  --teal-wash: #ddedeb; /* hover fills, tags, image placeholders */
+  --ink: #0f2a2e; /* body text (13.9:1 on paper, 9:1 on any coloured paper) */
+  --coral: #f06a55; /* the accent: marks, markers, the active bead. Fills only on light */
+  --coral-text: #b23e2b; /* coral darkened for small text on paper (5.3:1) and sheet (5.7:1) */
+  --coral-wash: #fde7e2; /* pale coral ground */
+  --seafoam: #a7d3ce; /* papers: surfaces only; text on them is ink or teal-deep */
+  --butter: #f4d58d;
+  --butter-wash: #fbf0d4;
+  --sky: #bfd9ea;
+  --peach: #f3b9a9;
+  --gold: #f4d58d; /* butter as an accent on the dark surfaces (menu, marks, halo); stays bright at night */
+  --violet: #6b3fa0; /* liturgical violet: Lent / Advent tint on the calendar only */
+  --danger: #a3261a; /* form errors only (6.8:1 on paper) */
+
+  /* ---- derived, contrast-checked ---- */
+  --ink-strong: #0b3f43; /* titles and answers set in deep teal on the ground or a paper */
+  --ink-on-paper: #0f2a2e; /* text on the gold accent: dark in both themes */
+  --teal-band: #135e63; /* the middle band of the footer's paper edge */
+  --muted: #435a5e; /* secondary text on paper (6.5:1), sheet, raised; never on coloured papers */
+  --hair: #cfdcdb; /* rules and dividers on light grounds */
+  --field: #6e8a8d; /* input borders (3.4:1; the non-text minimum is 3:1) */
+  --on-deep: #fbfdfc; /* text on deep teal (11.4:1) */
+  --muted-on-deep: #b5c9cb; /* secondary text on deep teal (6.7:1) */
+  --hair-on-deep: rgba(251, 253, 252, 0.2);
+  --scrim-strong: rgba(6, 33, 36, 0.74); /* photo scrim at a text-bearing edge */
+  --scrim-soft: rgba(6, 33, 36, 0.12);
+
+  /* The accent mark adapts to its surface: coral on light, butter on deep
+     teal (8.2:1), where coral would only reach 3.8:1. */
+  --mark: var(--coral);
+  --mark-text: var(--coral-text);
+
+  /* ---- paper shadows: teal-tinted, never black ---- */
+  --lift-1: 0 1px 1px rgba(11, 63, 67, 0.06), 0 8px 18px -12px rgba(11, 63, 67, 0.28);
+  --lift-2: 0 1px 2px rgba(11, 63, 67, 0.08), 0 4px 8px -4px rgba(11, 63, 67, 0.12),
+    0 22px 36px -22px rgba(11, 63, 67, 0.38);
+  --lift-3: 0 2px 3px rgba(11, 63, 67, 0.1), 0 14px 22px -10px rgba(11, 63, 67, 0.22),
+    0 40px 60px -30px rgba(11, 63, 67, 0.4);
+  --shadow: var(--lift-2);
+
+  /* ---- semantic aliases ---- */
+  --bg: var(--paper);
+  --bg-raised: var(--raised);
+  --text: var(--ink);
+  --text-muted: var(--muted);
+  --accent: var(--teal);
+  --border: var(--hair);
+
+  /* ---- radius: cut paper ----
+     xs: inputs, chips, photos inside a sheet   sm: sheets, cards, photos
+     lg: shadow-box frames                      pill: every button */
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 8px;
+  --radius-lg: 14px;
+  --radius-pill: 999px;
+
+  /* ---- spacing ---- */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+  --space-8: 4.5rem;
+  --space-9: 6rem;
+  --space-10: 8rem;
+
+  /* ---- containers ---- */
+  --container-wide: 80rem;
+  --container-read: 44rem;
+  --gutter: clamp(1rem, 4.5vw, 4rem);
+  --header-h: 4.5rem;
+
+  /* ---- type families ---- */
+  --font-display: 'Satoshi', ui-sans-serif, system-ui, sans-serif;
+  --font-sans: 'Satoshi', ui-sans-serif, system-ui, sans-serif;
+  --font-read: 'EB Garamond', 'Iowan Old Style', Georgia, serif;
+
+  /* ---- type scale (base 17px) ---- */
+  --text-micro: 0.8125rem;
+  --text-small: 0.9375rem;
+  --text-body: 1.0625rem;
+  --text-lead: clamp(1.15rem, 1.5vw, 1.35rem);
+  --text-h4: clamp(1.4rem, 2.2vw, 1.75rem);
+  --text-h3: clamp(1.7rem, 3vw, 2.4rem);
+  --text-h2: clamp(2.1rem, 4.6vw, 3.4rem);
+  --text-h1: clamp(2.5rem, 6vw, 4.5rem);
+  --text-hero: clamp(2.6rem, 5.4vw, 4.75rem);
+
+  /* ---- motion ---- */
+  --ease-settle: cubic-bezier(0.22, 0.68, 0.18, 1);
+  --ease-quick: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-soft: cubic-bezier(0.16, 1, 0.3, 1);
+  --duration-quick: 200ms;
+  --duration-medium: 320ms;
+  --duration-large: 600ms;
+}
+
+/* Anything on deep teal: light text, butter marks. */
+.on-deep {
+  --mark: var(--gold);
+  --mark-text: var(--gold);
+}
+
+/*
+  Night (the Christmas easter egg, see docs/DESIGN_NOTES.md "Night"), in the
+  colours of the crib ACC builds each Christmas: a navy ground that turns
+  violet like the stage light, ivory plaster (links, titles, button fills)
+  lit amber from inside, gold for marks. The coloured papers become dark
+  dusk tints carrying light text, and deep teal goes darker still, so the
+  footer and the menu sit below the ground. Set by html[data-theme="night"],
+  for this visit only.
+*/
+:root[data-theme='night'] {
+  --paper: #0b1124;
+  --sheet: #121a31;
+  --raised: #19223d;
+  --teal: #efdfbd; /* ivory plaster: links, titles, button fills */
+  --teal-deep: #060a17;
+  --teal-wash: #1e2644;
+  --teal-band: #22265a;
+  --ink: #e7e4f0;
+  --ink-strong: #f6eedb;
+  --ink-on-paper: #1a1430;
+  --coral: #e0574a;
+  --coral-text: #ff9e8c;
+  --coral-wash: #3a1f2e;
+  --seafoam: #1c3448;
+  --butter: #3e3220;
+  --butter-wash: #33291b;
+  --sky: #252c5c;
+  --peach: #3b2547;
+  --gold: #f2c46a;
+  --violet: #bba8f2;
+  --danger: #ff8b7b;
+
+  --muted: #b0aecb;
+  --hair: #2a3155;
+  --field: #767ea6;
+  --on-deep: #f1ecdf;
+  --muted-on-deep: #b0b1c9;
+  --hair-on-deep: rgba(241, 236, 223, 0.16);
+  --scrim-strong: rgba(2, 4, 14, 0.8);
+  --scrim-soft: rgba(2, 4, 14, 0.25);
+
+  --lift-1: 0 1px 1px rgba(0, 0, 0, 0.3), 0 8px 18px -12px rgba(0, 0, 0, 0.7);
+  --lift-2: 0 1px 2px rgba(0, 0, 0, 0.3), 0 4px 8px -4px rgba(0, 0, 0, 0.4), 0 22px 36px -22px rgba(0, 0, 0, 0.8);
+  --lift-3: 0 2px 3px rgba(0, 0, 0, 0.35), 0 14px 22px -10px rgba(0, 0, 0, 0.5), 0 40px 60px -30px rgba(0, 0, 0, 0.85);
+}

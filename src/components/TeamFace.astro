@@ -1,0 +1,112 @@
+---
+import { Image } from 'astro:assets';
+import { getTeamImage } from '../lib/team-images';
+
+// One person on the team: a 4:5 photo mounted on a white mat like the
+// gallery prints, laid a little crooked (--tilt), the name under it and the
+// role when the group heading doesn't already say it. Without a photo the
+// mat holds the person's initials. Width comes from the parent grid.
+interface Props {
+  name: string;
+  role?: string;
+  imageSource: string | null;
+  tilt?: number;
+  sizes?: string;
+}
+
+const { name, role, imageSource, tilt = 0, sizes = '(max-width: 48rem) 45vw, 12rem' } = Astro.props;
+const photo = getTeamImage(imageSource);
+const initials =
+  name
+    .replace(/^Fr\.\s*/, '')
+    .split(' ')
+    .filter((w) => /^[A-Z]/.test(w))
+    .slice(0, 2)
+    .map((w) => w[0])
+    .join('') || name[0];
+---
+
+<li class="face" style={`--tilt:${tilt}deg`}>
+  <span class="face__print">
+    {
+      photo ? (
+        <Image src={photo} alt="" widths={[240, 400, 560]} sizes={sizes} loading="lazy" />
+      ) : (
+        <span class="face__ini" aria-hidden="true">{initials}</span>
+      )
+    }
+  </span>
+  <span class="face__name">{name}</span>
+  {role && <span class="face__role">{role}</span>}
+</li>
+
+<style>
+  .face {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+  .face__print {
+    display: block;
+    padding: 6px;
+    border-radius: var(--radius-sm);
+    background: var(--sheet);
+    box-shadow: var(--lift-1);
+    transform: rotate(var(--tilt));
+    transition: transform 0.45s var(--ease-soft), box-shadow 0.45s var(--ease-soft);
+  }
+  .face:hover .face__print {
+    transform: translateY(-4px) rotate(0deg);
+    box-shadow: var(--lift-2);
+  }
+  /* the photo (or the initials) carries the 4:5 shape, so a large source
+     image can never stretch the print */
+  .face__print :global(img),
+  .face__ini {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 4 / 5;
+  }
+  .face__print :global(img) {
+    object-fit: cover;
+    border-radius: var(--radius-xs);
+  }
+  .face__ini {
+    display: grid;
+    place-items: center;
+    border-radius: var(--radius-xs);
+    background: var(--teal-wash);
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: var(--text-h3);
+    letter-spacing: 0.02em;
+    color: var(--teal);
+  }
+
+  .face__name {
+    margin-top: var(--space-3);
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: var(--text-body);
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+    color: var(--ink-strong);
+    text-wrap: balance;
+  }
+  .face__role {
+    margin-top: var(--space-1);
+    font-size: var(--text-small);
+    color: var(--ink);
+    opacity: 0.8;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .face__print {
+      transition: none;
+    }
+    .face:hover .face__print {
+      transform: rotate(var(--tilt));
+    }
+  }
+</style>

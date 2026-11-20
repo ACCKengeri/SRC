@@ -1,0 +1,500 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import TeamFace from '../components/TeamFace.astro';
+import { knowUs, mission, vision, quote } from '../lib/about-content';
+import Needs from '../components/Needs.astro';
+import FoldStrip from '../components/FoldStrip.astro';
+import { getFaces } from '../lib/team';
+import { leadGroups, crewSets as layCrews, teamSignature, PAPERS, TILT, PRINT_TILT } from '../lib/team-shape';
+
+const base = import.meta.env.BASE_URL;
+const team = await getFaces();
+const domainNames = new Map((await getCollection('domains')).map((d) => [d.data.id, d.data.name]));
+
+// The coordinators lead the section, the faculty and the students side by
+// side; then a paper per domain and per department, in the roster's order.
+// The same layout runs in the browser on the live roster (see the script).
+const leads = leadGroups(team);
+const crewSets = layCrews(team, domainNames);
+---
+
+<BaseLayout
+  title="About | Association of Christian Christites"
+  description="The origin, mission, and people behind the Association of Christian Christites at CHRIST (Deemed to be University), Kengeri."
+>
+  <section class="head">
+    <h1>A family on<br />campus.</h1>
+    <p class="head__lead">
+      The Christian student community at CHRIST (Deemed to be University), centred on the
+      Kengeri campus and the Chapel of St. Kuriakose Elias Chavara.
+    </p>
+  </section>
+  <FoldStrip />
+
+  <div class="cast">
+  <section class="origin sheet torn-top reveal-lay" style="--lay-r:-0.8deg" aria-labelledby="origin-heading">
+    <h2 id="origin-heading" class="label">how we began</h2>
+    {knowUs.map((paragraph) => <p class="reveal">{paragraph}</p>)}
+    <Needs as="p">NEEDS COPY: ACC founding story / year</Needs>
+  </section>
+  </div>
+
+  <section class="mv" aria-label="Mission and vision">
+    <div class="mv__in">
+      <div class="mv__card mv__card--m sheet sheet--card p-deep on-deep reveal-lay" style="--lay-r:-2deg;--rest-r:-1deg">
+        <p class="mv__k">Mission</p>
+        <p class="mv__stmt">{mission}</p>
+      </div>
+      <div class="mv__card mv__card--v sheet sheet--card p-coral reveal-lay" style="--reveal-i:1;--lay-r:2deg;--rest-r:0.8deg">
+        <p class="mv__k">Vision</p>
+        <p class="mv__stmt">{vision}</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="team" aria-labelledby="team-heading" data-team-sig={teamSignature(team)}>
+    <div class="team__in">
+      <div class="team__head">
+        <h2 id="team-heading">The core team</h2>
+        <p class="team__lead">
+          The people who keep ACC going this year, from the coordinators to the heads of every
+          domain and department.
+        </p>
+      </div>
+
+      <div class="leads sheet sheet--card p-deep on-deep reveal-lay" style="--lay-r:-0.6deg">
+        {
+          leads.map((group) => (
+            <div class="leads__group" data-n={group.people.length}>
+              <h3 class="leads__label">{group.label}</h3>
+              <ul class="leads__people" role="list">
+                {group.people.map((p, j) => (
+                  <TeamFace
+                    name={p.name}
+                    role={p.role}
+                    imageSource={(p as (typeof team)[number]).imageSource}
+                    tilt={PRINT_TILT[(j + group.people.length) % PRINT_TILT.length]}
+                    sizes="(max-width: 48rem) 45vw, 13rem"
+                  />
+                ))}
+              </ul>
+            </div>
+          ))
+        }
+      </div>
+
+      {
+        crewSets.map((set) => (
+          <div class="crews">
+            <h3 id={`${set.id}-heading`} class="crews__label">{set.label}</h3>
+            <ul class="crews__grid" role="list" aria-labelledby={`${set.id}-heading`}>
+              {set.crews.map((crew, i) => (
+                <li
+                  class:list={['crew', 'sheet', PAPERS[i % PAPERS.length], 'reveal-lay']}
+                  style={`--n:${crew.people.length};--reveal-i:${i % 3};--lay-r:${TILT[i % TILT.length] * 2}deg;--rest-r:${TILT[i % TILT.length]}deg`}
+                >
+                  <div class="crew__top">
+                    <h4 class="crew__name">{crew.name}</h4>
+                    {crew.page && (
+                      <a class="crew__link" href={`${base}domains/${crew.page}/`}>
+                        {crew.link}
+                      </a>
+                    )}
+                  </div>
+                  <ul class="crew__people" role="list">
+                    {crew.people.map((p, j) => (
+                      <TeamFace name={p.name} imageSource={(p as (typeof team)[number]).imageSource} tilt={PRINT_TILT[(i * 3 + j) % PRINT_TILT.length]} />
+                    ))}
+                  </ul>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="quote">
+    <div class="cast"><p class="quote__q sheet torn-top p-butter reveal-lay" style="--lay-r:1deg">{quote}</p></div>
+  </section>
+</BaseLayout>
+
+<script>
+  // The live roster from the Sheet, laid out exactly as the build lays out
+  // the built-in one; redrawn only when it differs from what's on the page.
+  import { onLive, siteDomains } from '../lib/live/read';
+  import { el, drivePhoto, initials } from '../lib/live/dom';
+  import { leadGroups, crewSets, teamSignature, PAPERS, TILT, PRINT_TILT, type Face } from '../lib/team-shape';
+
+  const section = document.querySelector<HTMLElement>('section.team');
+  const leadsBox = section?.querySelector<HTMLElement>('.leads');
+  const faceLike = section?.querySelector('.face') ?? null;
+  const pageLike = leadsBox ?? null;
+  const base = import.meta.env.BASE_URL;
+
+  const face = (p: Face, tilt: number, sizes: string, withRole: boolean) => {
+    const li = el('li', faceLike, 'face');
+    li.style.setProperty('--tilt', `${tilt}deg`);
+    const print = el('span', faceLike, 'face__print');
+    if (p.photo) print.appendChild(drivePhoto(p.photo, sizes));
+    else {
+      const ini = el('span', faceLike, 'face__ini', initials(p.name));
+      ini.setAttribute('aria-hidden', 'true');
+      print.appendChild(ini);
+    }
+    li.append(print, el('span', faceLike, 'face__name', p.name));
+    if (withRole) li.appendChild(el('span', faceLike, 'face__role', p.role));
+    return li;
+  };
+
+  function draw(team: Face[]) {
+    if (!section || !leadsBox || !faceLike) return;
+    const names = new Map(siteDomains().map((d) => [d.id, d.name]));
+    leadsBox.replaceChildren(
+      ...leadGroups(team).map((g) => {
+        const box = el('div', pageLike, 'leads__group');
+        box.dataset.n = String(g.people.length);
+        const ul = el('ul', pageLike, 'leads__people');
+        ul.setAttribute('role', 'list');
+        g.people.forEach((p, j) => ul.appendChild(face(p, PRINT_TILT[(j + g.people.length) % PRINT_TILT.length], '(max-width: 48rem) 45vw, 13rem', true)));
+        box.append(el('h3', pageLike, 'leads__label', g.label), ul);
+        return box;
+      }),
+    );
+    section.querySelectorAll('.crews').forEach((c) => c.remove());
+    const host = section.querySelector('.team__in')!;
+    for (const set of crewSets(team, names)) {
+      const wrap = el('div', pageLike, 'crews');
+      const h = el('h3', pageLike, 'crews__label', set.label);
+      h.id = `${set.id}-heading`;
+      const ul = el('ul', pageLike, 'crews__grid');
+      ul.setAttribute('role', 'list');
+      ul.setAttribute('aria-labelledby', h.id);
+      set.crews.forEach((crew, i) => {
+        const t = TILT[i % TILT.length];
+        const li = el('li', pageLike, `crew sheet ${PAPERS[i % PAPERS.length]} reveal-lay is-in`);
+        li.setAttribute('style', `--n:${crew.people.length};--reveal-i:${i % 3};--lay-r:${t * 2}deg;--rest-r:${t}deg`);
+        const top = el('div', pageLike, 'crew__top');
+        top.appendChild(el('h4', pageLike, 'crew__name', crew.name));
+        if (crew.page) {
+          const a = el('a', pageLike, 'crew__link', crew.link);
+          a.href = `${base}domains/${crew.page}/`;
+          top.appendChild(a);
+        }
+        const people = el('ul', pageLike, 'crew__people');
+        people.setAttribute('role', 'list');
+        crew.people.forEach((p, j) => people.appendChild(face(p, PRINT_TILT[(i * 3 + j) % PRINT_TILT.length], '(max-width: 48rem) 45vw, 12rem', false)));
+        li.append(top, people);
+        ul.appendChild(li);
+      });
+      wrap.append(h, ul);
+      host.appendChild(wrap);
+    }
+  }
+
+  onLive((d) => {
+    if (!d.team || !section) return;
+    const sig = teamSignature(d.team);
+    if (sig === section.dataset.teamSig) return;
+    section.dataset.teamSig = sig;
+    draw(d.team);
+  });
+</script>
+
+<style>
+  .head {
+    max-width: var(--container-wide);
+    margin: 0 auto;
+    padding: var(--space-9) var(--gutter) var(--space-6);
+  }
+  .head h1 {
+    font-size: var(--text-h1);
+    letter-spacing: -0.035em;
+    color: var(--teal);
+  }
+  .head__lead {
+    margin-top: var(--space-5);
+    font-size: var(--text-lead);
+    color: var(--text-muted);
+    max-width: 44ch;
+  }
+
+  /* The story, on one long sheet with a torn top. */
+  .origin {
+    max-width: calc(var(--container-read) + 2 * clamp(1.5rem, 5vw, 4rem));
+    margin: var(--space-7) auto var(--space-9);
+    padding: clamp(2.5rem, 6vw, 4.5rem) clamp(1.5rem, 5vw, 4rem) clamp(2rem, 5vw, 3.5rem);
+  }
+  @media (max-width: 52rem) {
+    .origin {
+      margin-inline: var(--gutter);
+    }
+  }
+  .origin > .label {
+    display: block;
+    margin-bottom: var(--space-6);
+  }
+  .origin p {
+    font-family: var(--font-read);
+    font-weight: 400;
+    font-size: clamp(1.2rem, 1.6vw, 1.35rem);
+    line-height: 1.6;
+    margin-bottom: var(--space-5);
+    color: var(--ink);
+  }
+  .origin p:first-of-type {
+    font-size: var(--text-h4);
+    line-height: 1.4;
+    color: var(--teal);
+  }
+
+  /* Mission and vision: two cards laid side by side, a little crooked. */
+  .mv {
+    max-width: var(--container-wide);
+    margin: 0 auto;
+    padding: 0 var(--gutter);
+  }
+  .mv__in {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: clamp(1.5rem, 4vw, 3rem);
+  }
+  .mv__card {
+    padding: clamp(2rem, 5vw, 3.5rem);
+    min-height: 15rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: var(--space-6);
+  }
+  .mv__card--v {
+    margin-top: var(--space-7);
+  }
+  .mv__k {
+    font-size: var(--text-small);
+    color: var(--mark-text);
+    font-weight: 700;
+    font-family: var(--font-display);
+  }
+  .mv__card--v .mv__k {
+    color: var(--coral-text);
+  }
+  .mv__stmt {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: var(--text-h3);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+  }
+  .mv__card--v .mv__stmt {
+    color: var(--ink-strong);
+  }
+
+  .team {
+    padding: var(--space-9) var(--gutter) var(--space-10);
+  }
+  .team__in {
+    max-width: var(--container-wide);
+    margin: 0 auto;
+  }
+  .team__head {
+    max-width: 46rem;
+    margin-bottom: var(--space-7);
+  }
+  .team__head h2 {
+    font-size: var(--text-h2);
+    color: var(--teal);
+    letter-spacing: -0.03em;
+  }
+  .team__lead {
+    margin-top: var(--space-3);
+    color: var(--text-muted);
+    font-size: var(--text-lead);
+    line-height: 1.45;
+  }
+
+  /* The coordinators: one dark card, the faculty and the students either
+     side of a scored fold, their prints the largest on the page. */
+  .leads {
+    /* one print size for all five, a little larger than the heads' */
+    --lp: clamp(8rem, 13.5vw, 12rem);
+    display: grid;
+    grid-template-columns: auto auto;
+    justify-content: start;
+    padding: clamp(2rem, 5vw, 3.5rem) clamp(1.25rem, 4vw, 3.5rem) clamp(2.25rem, 5vw, 3.75rem);
+    margin-bottom: var(--space-9);
+  }
+  .leads__group {
+    min-width: 0;
+  }
+  .leads__group + .leads__group {
+    border-left: 1px dashed color-mix(in srgb, var(--on-deep) 30%, transparent);
+    padding-left: clamp(1.25rem, 3.5vw, 3rem);
+    margin-left: clamp(1.25rem, 3.5vw, 3rem);
+  }
+  .leads__label {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: var(--text-small);
+    color: var(--gold);
+    margin-bottom: var(--space-5);
+  }
+  .leads__people {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: var(--space-6) var(--space-5);
+  }
+  .leads__group[data-n='3'] .leads__people {
+    grid-template-columns: repeat(3, var(--lp));
+  }
+  .leads__group[data-n='2'] .leads__people {
+    grid-template-columns: repeat(2, var(--lp));
+  }
+  /* until there's room for all five side by side at full size, the
+     students go under the faculty */
+  @media (max-width: 82rem) {
+    .leads {
+      --lp: 12rem;
+      grid-template-columns: auto;
+    }
+    .leads__group + .leads__group {
+      border-left: 0;
+      border-top: 1px dashed color-mix(in srgb, var(--on-deep) 30%, transparent);
+      padding: var(--space-6) 0 0;
+      margin: var(--space-6) 0 0;
+    }
+  }
+  .leads :global(.face__name),
+  .leads :global(.face__role) {
+    color: var(--on-deep);
+  }
+
+  /* The heads: a paper per domain or department, as wide as its people.
+     The papers wrap and stretch to fill each row, so every print keeps the
+     same size whether a domain has two heads or three. */
+  .crews {
+    --print: 10.75rem;
+  }
+  .crews + .crews {
+    margin-top: var(--space-9);
+  }
+  .crews__label {
+    font-size: var(--text-h3);
+    color: var(--teal);
+    letter-spacing: -0.02em;
+    margin-bottom: var(--space-5);
+  }
+  .crews__grid {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-5);
+  }
+  .crew {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+    padding: var(--space-5) var(--space-5) var(--space-6);
+  }
+  .crew__top {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-3);
+  }
+  .crew__name {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: var(--text-h4);
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    color: var(--ink-strong);
+  }
+  .crew__link {
+    flex: none;
+    font-size: var(--text-micro);
+    font-weight: 600;
+    color: var(--ink-strong);
+    text-decoration: underline;
+    text-decoration-color: var(--coral);
+    text-underline-offset: 0.25em;
+    padding-block: var(--space-2);
+  }
+  .crew__people {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(var(--n), var(--print));
+    gap: var(--space-5) var(--space-4);
+  }
+
+  @media (max-width: 48rem) {
+    .leads {
+      grid-template-columns: 1fr;
+    }
+    /* two prints to a row on a phone */
+    .leads__group[data-n] .leads__people {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    /* a domain's heads in one row that swipes sideways, the third print
+       peeking in from the edge so it's clear there's more */
+    .crew__people {
+      grid-template-columns: none;
+      grid-auto-flow: column;
+      grid-auto-columns: 42%;
+      overflow-x: auto;
+      overscroll-behavior-x: contain;
+      scroll-snap-type: x mandatory;
+      scrollbar-width: none;
+      /* room for the tilted prints and their shadows inside the scroller */
+      margin: calc(-1 * var(--space-3)) calc(-1 * var(--space-4));
+      padding: var(--space-3) var(--space-4);
+      scroll-padding-inline: var(--space-4);
+    }
+    .crew__people::-webkit-scrollbar {
+      display: none;
+    }
+    .crew__people > :global(.face) {
+      scroll-snap-align: start;
+    }
+    .crew {
+      flex-basis: 100%;
+      gap: var(--space-4);
+      padding: var(--space-4) var(--space-4) var(--space-5);
+    }
+  }
+
+  .quote {
+    max-width: var(--container-wide);
+    margin: 0 auto var(--space-10);
+    padding: 0 var(--gutter);
+  }
+  .quote__q {
+    padding: clamp(3.5rem, 8vw, 6rem) var(--gutter);
+    text-align: center;
+    color: var(--ink-strong);
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: var(--text-h2);
+    letter-spacing: -0.03em;
+    line-height: 1.12;
+    text-wrap: balance;
+  }
+
+  @media (max-width: 48rem) {
+    .mv__in {
+      grid-template-columns: 1fr;
+    }
+    .mv__card--v {
+      margin-top: 0;
+    }
+  }
+</style>

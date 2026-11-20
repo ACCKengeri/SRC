@@ -1,0 +1,509 @@
+---
+/*
+  The home hero: a full-screen pinned stage. Beside the copy, a pop-up
+  greeting card opens as the page scrolls (src/scripts/hero-scene.ts): hills
+  and the Kengeri campus (the brick engineering block, the architecture block,
+  the chapel and the PU block with its glass tower, the gate and the fountain)
+  stand up from the fold, and a paper chain of
+  friends unfolds in front of them. A satin ribbon, teal on its face and
+  coral on its back, curls around the card (the script below,
+  src/scripts/ribbon/paint.ts) and leaves the stage where the page ribbon
+  picks it up. Until the 3D script is running, and for anyone with reduced
+  motion, Data Saver, no WebGL or no JavaScript, the stage shows a still of
+  the card and is not pinned.
+*/
+// The stills are transparent captures, encoded by hand (WebP, quality 72,
+// alpha 70) from dev captures; ?url keeps Astro from re-encoding them with a
+// lossless alpha channel at twice the size. See HANDOVER.md to recapture.
+import stillWide from '../assets/hero/hero-still-wide.webp?url';
+import stillWideSm from '../assets/hero/hero-still-wide-960.webp?url';
+import stillTall from '../assets/hero/hero-still-tall.webp?url';
+// Christmas night (the easter egg): lazy, and hidden by day, so a day visit never fetches them.
+import stillWideNight from '../assets/hero/hero-still-wide-night.webp?url';
+import stillWideSmNight from '../assets/hero/hero-still-wide-960-night.webp?url';
+import stillTallNight from '../assets/hero/hero-still-tall-night.webp?url';
+import { scripture } from '../lib/scripture';
+
+const verse = scripture.gathered;
+const base = import.meta.env.BASE_URL;
+const WHATSAPP = 'https://chat.whatsapp.com/KoTpbOt0HZB8Uq0PbNUqrj';
+
+---
+
+<section class="hs" id="hero" aria-labelledby="hero-title">
+  <div class="hs__stage">
+    <canvas class="hs__ribbon" aria-hidden="true"></canvas>
+    <picture class="hs__still">
+      <source media="(max-width: 60rem)" srcset={stillTall} />
+      <source srcset={`${stillWideSm} 960w, ${stillWide} 1440w`} sizes="100vw" />
+      <img
+        src={stillWide}
+        width="1440"
+        height="900"
+        alt="A pop-up card opening on a table: the CHRIST University Kengeri campus rises from the fold among green hills, the brick engineering block, the architecture block under its floating roof, the stone-clad chapel of St. Kuriakose Elias Chavara at the end of the white and navy PU block with its glass tower, the campus gate and the fountain, with a chain of paper friends holding hands in front."
+        loading="eager"
+        fetchpriority="high"
+        decoding="async"
+      />
+    </picture>
+    <picture class="hs__still hs__still--night">
+      <source media="(max-width: 60rem)" srcset={stillTallNight} />
+      <source srcset={`${stillWideSmNight} 960w, ${stillWideNight} 1440w`} sizes="100vw" />
+      <img
+        src={stillWideNight}
+        width="1440"
+        height="900"
+        alt="The same pop-up card on Christmas night: the star of Bethlehem over the crib with a small white town of lit houses huddled round it, the campus blocks across the hills behind, every one strung with Christmas lights in every colour, and a tall tree of fairy lights, paper star lanterns, the chapel lit for midnight Mass, a crib with the Holy Family by the town wall, the fountain glowing, and the friends in red caps and scarves under falling snow."
+        loading="lazy"
+        decoding="async"
+      />
+    </picture>
+    <canvas class="hs__canvas" aria-hidden="true"></canvas>
+
+    <div class="hs__copy">
+      <h1 class="hs__title" id="hero-title"><span>Association of</span> <span>Christian Christites</span></h1>
+
+      <div class="hs__swap">
+        <p class="hs__sub">
+          A community of faith, fellowship and purpose at CHRIST (Deemed to be University), Kengeri.
+        </p>
+        <figure class="hs__verse">
+          <blockquote>{verse.text}</blockquote>
+          <figcaption>{verse.reference}, {verse.translation}</figcaption>
+        </figure>
+      </div>
+
+      <div class="hs__cta">
+        <a class="btn" href={WHATSAPP} data-live-href="whatsapp" target="_blank" rel="noopener noreferrer">Join us</a>
+        <a class="btn btn--ghost" href={`${base}about/`}>About ACC</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { heroRegion } from '../scripts/hero/layout';
+  import { RibbonLine, bezierPath, paintRibbon, ribbonTheme, type P2 } from '../scripts/ribbon/paint';
+  import { addLoop, arcLengths } from '../scripts/ribbon/flow';
+
+  const root = document.getElementById('hero');
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const saveData = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData;
+
+  if (root) {
+    const stage = root.querySelector<HTMLElement>('.hs__stage')!;
+    const rc = root.querySelector<HTMLCanvasElement>('.hs__ribbon')!;
+    const rctx = rc.getContext('2d');
+    const copyEls = Array.from(root.querySelectorAll<HTMLElement>('.hs__copy > *'));
+    const still = reduced || saveData;
+
+    // The satin ribbon: it comes in from the right over the top of the card,
+    // falls past its left side, turning over itself in one curl there, sweeps
+    // under the card and leaves through the bottom of the stage, where the
+    // page ribbon carries on. It lives in the free part of the stage (the
+    // box the card is fitted into), so it never runs under the text. Points
+    // are Bezier controls, as fractions of that box: x across, y down.
+    const PATH = [
+      [1.2, 0.02], [0.8, -0.12], [0.16, -0.08], [0.03, 0.28],
+      [-0.08, 0.6], [0.02, 0.96], [0.36, 1.0],
+      [0.62, 1.03], [0.84, 0.98], [1.0, 1.02],
+    ];
+    let line: RibbonLine | null = null;
+    let W = 0, H = 0, dpr = 1, width = 30, shown = -1, want = still ? 1 : 0.4;
+    const paint = () => {
+      if (!rctx || !line || Math.abs(want - shown) < 0.0004) return;
+      shown = want;
+      rctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      rctx.clearRect(0, 0, W, H);
+      paintRibbon(rctx, line, 0, line.at(want * line.total), width);
+    };
+    const layout = () => {
+      W = stage.clientWidth;
+      H = stage.clientHeight;
+      if (!W || !H) return;
+      const R = heroRegion(stage, copyEls);
+      dpr = Math.min(window.devicePixelRatio || 1, 2);
+      rc.width = Math.round(W * dpr);
+      rc.height = Math.round(H * dpr);
+      width = Math.round(R.wide ? Math.min(46, Math.max(28, W * 0.028)) : Math.min(26, Math.max(18, W * 0.05)));
+      const at = ([x, y]: number[]): P2 => [R.x + x * R.w, R.y + y * R.h];
+      // after the last point, drop straight out of the bottom of the stage
+      const end = at([1.0, 1.02]);
+      const exitX = Math.min(W - width * 1.5, end[0] + width * 0.6);
+      const K: P2[] = PATH.map(at);
+      K.push([end[0] + width * 2.5, end[1] + width * 0.4], [exitX, H - width * 2], [exitX, H + width * 2]);
+      let pts = bezierPath(K, 3);
+      // the curl, beside the card's lower left corner, bulging outward
+      const L = arcLengths(pts);
+      let best = 0, bd = Infinity;
+      const aim = at(R.wide ? [-0.04, 0.62] : [0.02, 0.5]);
+      for (let i = 0; i < pts.length; i += 4) {
+        const d = Math.hypot(pts[i][0] - aim[0], pts[i][1] - aim[1]);
+        if (d < bd) {
+          bd = d;
+          best = i;
+        }
+      }
+      pts = addLoop(pts, L[best], width * 1.2, width * 2.5, 1);
+      root.dataset.loop = String(best);
+      line = new RibbonLine(pts);
+      root.dataset.ribbonX = String(Math.round(exitX));
+      shown = -1;
+      paint();
+    };
+    document.addEventListener('acc:theme', (e) => {
+      ribbonTheme((e as CustomEvent<string>).detail === 'night');
+      shown = -1;
+      paint();
+    });
+    const drawRibbon = (p: number) => {
+      const t = Math.min(1, Math.max(0, p / 0.45));
+      want = still ? 1 : 0.4 + 0.6 * t * t * (3 - 2 * t);
+      paint();
+    };
+    layout();
+    drawRibbon(0);
+    new ResizeObserver(layout).observe(stage);
+    document.fonts?.ready.then(layout);
+
+    if (still) {
+      root.classList.add('hs--static');
+    } else {
+      // The still is the LCP. The 3D engine is an enhancement, so none of it is
+      // fetched, parsed or compiled until the visitor shows intent: the first
+      // scroll, touch, key press or pointer move.
+      const intents = ['scroll', 'wheel', 'touchstart', 'pointermove', 'keydown'] as const;
+      let started = false;
+      const go = () => {
+        if (started) return;
+        started = true;
+        intents.forEach((t) => window.removeEventListener(t, go));
+        import('../scripts/hero-scene')
+          .then(({ initHeroScene }) => {
+            if (!initHeroScene(root)) root.classList.add('hs--static');
+          })
+          .catch(() => root.classList.add('hs--static'));
+      };
+      intents.forEach((t) => window.addEventListener(t, go, { passive: true }));
+
+      // Scroll progress through the pinned stage, eased a little: --p drives
+      // the subtitle-to-verse swap, and the ribbon draws on with it.
+      // Dev stills (?hero-poster / ?hero-look) hold one progress instead.
+      const dev = import.meta.env.DEV ? /[?&]hero-(?:poster|look)(?:=([\d.]+))?/.exec(location.search) : null;
+      let onScreen = false;
+      let loop = 0, pS = -1, last = 0;
+      const tick = (now: number) => {
+        if (!onScreen || root.classList.contains('hs--static')) {
+          loop = 0;
+          return;
+        }
+        const r = root.getBoundingClientRect();
+        const travel = r.height - stage.clientHeight;
+        const p = travel > 0 ? Math.min(1, Math.max(0, -r.top / travel)) : 0;
+        const k = pS < 0 ? 1 : 1 - Math.exp(-Math.min(0.1, (now - last) / 1000) * 8);
+        last = now;
+        const next = pS + (p - pS) * k;
+        if (Math.abs(next - pS) > 1e-5) {
+          pS = Math.abs(p - next) < 1e-4 ? p : next;
+          root.style.setProperty('--p', pS.toFixed(4));
+          drawRibbon(pS);
+        }
+        loop = requestAnimationFrame(tick);
+      };
+      new IntersectionObserver(([e]) => {
+        onScreen = e.isIntersecting;
+        // While the hero is on screen the header is lighter, so the scene
+        // reads as one full screen; it goes solid again below the hero.
+        document.documentElement.classList.toggle('over-hero', e.isIntersecting);
+        if (onScreen && !loop && !dev) {
+          last = performance.now();
+          loop = requestAnimationFrame(tick);
+        }
+      }).observe(root);
+      // Arriving already scrolled (back/forward, anchor), or a dev capture.
+      if (dev) {
+        const p = dev[1] ? parseFloat(dev[1]) : 0;
+        root.style.setProperty('--p', String(p));
+        drawRibbon(p);
+      }
+      if (window.scrollY > 0 || dev) go();
+    }
+  }
+</script>
+
+<style>
+  .hs {
+    --p: 0;
+    --len: 400vh;
+    position: relative;
+    height: var(--len);
+    /* Run under the frosted header: the scene owns the whole first screen. */
+    margin-top: calc(-1 * var(--header-h));
+  }
+  .hs__stage {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    /* The large viewport: the stage never resizes when a mobile toolbar slides. */
+    height: 100lvh;
+    min-height: 32rem;
+    overflow: hidden;
+    /* The ground, with a soft butter glow where the card stands and a little
+       seafoam in the far corner. */
+    background:
+      radial-gradient(40% 55% at 72% 60%, color-mix(in srgb, var(--butter) 34%, transparent) 0%, transparent 100%),
+      radial-gradient(50% 60% at 100% 100%, color-mix(in srgb, var(--seafoam) 30%, transparent) 0%, transparent 100%),
+      radial-gradient(60% 60% at 8% 0%, var(--sheet) 0%, transparent 100%),
+      var(--paper);
+    isolation: isolate;
+  }
+
+  /* ---- the satin ribbon, behind the friends ---- */
+  .hs__ribbon {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
+
+  /* ---- the scene fills the stage edge to edge ---- */
+  .hs__still,
+  .hs__still :global(img),
+  .hs__canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+  .hs__still :global(img) {
+    object-fit: cover;
+  }
+  .hs__still {
+    transition: opacity 0.5s var(--ease-soft);
+  }
+  .hs__canvas {
+    opacity: 0;
+    transition: opacity 0.5s var(--ease-soft);
+  }
+  .hs:global(.is-live) .hs__canvas {
+    opacity: 1;
+  }
+  .hs:global(.is-live) .hs__still {
+    opacity: 0;
+  }
+  /* night: its own still, and a faint gold glow where the card stands */
+  .hs__still--night,
+  :global([data-theme='night']) .hs__still:not(.hs__still--night) {
+    display: none;
+  }
+  :global([data-theme='night']) .hs__still--night {
+    display: block;
+  }
+  :global([data-theme='night']) .hs__stage {
+    background:
+      radial-gradient(40% 55% at 72% 60%, color-mix(in srgb, var(--gold) 9%, transparent) 0%, transparent 100%),
+      radial-gradient(60% 60% at 8% 0%, var(--sheet) 0%, transparent 100%),
+      var(--paper);
+  }
+  @media (max-width: 60rem) {
+    :global([data-theme='night']) .hs__stage {
+      background:
+        radial-gradient(70% 40% at 50% 78%, color-mix(in srgb, var(--gold) 9%, transparent) 0%, transparent 100%),
+        var(--paper);
+    }
+  }
+
+  /* ---- copy ---- */
+  .hs__copy {
+    position: relative;
+    z-index: 3;
+    height: 100%;
+    max-width: calc(var(--container-wide) + 2 * var(--gutter));
+    margin: 0 auto;
+    padding: var(--header-h) var(--gutter) 0;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    pointer-events: none;
+  }
+  .hs__copy > * {
+    max-width: min(30rem, 44%);
+  }
+  .hs__copy a {
+    pointer-events: auto;
+  }
+  .hs__title {
+    font-size: clamp(2.1rem, 3.5vw, 3.25rem);
+    font-weight: 800;
+    line-height: 1.04;
+    letter-spacing: -0.035em;
+    color: var(--teal);
+    max-width: none;
+  }
+  .hs__title span {
+    display: block;
+    white-space: nowrap;
+  }
+  .hs__swap {
+    display: grid;
+    margin-top: var(--space-5);
+  }
+  .hs__sub,
+  .hs__verse {
+    grid-area: 1 / 1;
+  }
+  .hs__sub {
+    font-size: var(--text-lead);
+    line-height: 1.5;
+    color: var(--ink);
+    opacity: calc(1 - clamp(0, (var(--p) - 0.5) * 6, 1));
+  }
+  .hs__verse {
+    margin: 0;
+    --vin: clamp(0, (var(--p) - 0.72) * 6, 1);
+    opacity: var(--vin);
+    transform: translateY(calc((1 - var(--vin)) * 0.75rem));
+  }
+  .hs__verse blockquote {
+    margin: 0;
+    font-family: var(--font-read);
+    font-style: italic;
+    font-weight: 500;
+    font-size: clamp(1.4rem, 2.1vw, 1.85rem);
+    line-height: 1.3;
+    color: var(--teal);
+    text-wrap: balance;
+    quotes: '\201C' '\201D';
+  }
+  .hs__verse blockquote::before {
+    content: open-quote;
+  }
+  .hs__verse blockquote::after {
+    content: close-quote;
+  }
+  .hs__verse figcaption {
+    margin-top: var(--space-3);
+    font-size: var(--text-small);
+    font-weight: 700;
+    /* Teal, not coral: small coral text drops below 4.5:1 over the bright haze. */
+    color: var(--teal);
+  }
+  .hs__cta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    margin-top: var(--space-6);
+  }
+  /* A ghost button needs its own ground over the scene. */
+  .hs__cta :global(.btn--ghost) {
+    background: var(--sheet);
+  }
+
+  /* ---- static: reduced motion, data saver, no WebGL, no JS ---- */
+  .hs:global(.hs--static),
+  :global(:root.no-js) .hs {
+    height: auto;
+  }
+  .hs:global(.hs--static) .hs__stage,
+  :global(:root.no-js) .hs .hs__stage {
+    position: relative;
+    top: 0;
+  }
+  .hs:global(.hs--static) .hs__swap,
+  :global(:root.no-js) .hs .hs__swap {
+    gap: var(--space-5);
+  }
+  .hs:global(.hs--static) .hs__sub,
+  .hs:global(.hs--static) .hs__verse,
+  :global(:root.no-js) .hs .hs__sub,
+  :global(:root.no-js) .hs .hs__verse {
+    grid-area: auto;
+    opacity: 1;
+    transform: none;
+  }
+  .hs:global(.hs--static) .hs__canvas {
+    display: none;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .hs {
+      height: auto;
+    }
+    .hs__stage {
+      position: relative;
+      top: 0;
+    }
+    .hs__sub,
+    .hs__verse {
+      grid-area: auto;
+      opacity: 1;
+      transform: none;
+    }
+    .hs__swap {
+      gap: var(--space-5);
+    }
+  }
+
+  /* ---- header over the hero: lighter, so the scene owns the screen ---- */
+  :global(html.over-hero .site-header:not(.is-open)) {
+    background: color-mix(in srgb, var(--bg) 58%, transparent);
+    border-bottom-color: transparent;
+  }
+
+  /* ---- dev still capture: just the card and its shadows, on a transparent page ---- */
+  :global(html.poster-shot) :global(astro-dev-toolbar),
+  :global(html.poster-shot) :global(.site-header),
+  :global(html.poster-shot) .hs__ribbon,
+  :global(html.poster-shot) .hs__still {
+    display: none;
+  }
+  :global(html.poster-shot),
+  :global(html.poster-shot body),
+  :global(html.poster-shot) .hs__stage {
+    background: transparent;
+  }
+  /* Hidden but still laid out: the scene measures it to keep ribbons clear. */
+  :global(html.poster-shot) .hs__copy {
+    visibility: hidden;
+  }
+  :global(html.poster-shot) .hs__canvas {
+    opacity: 1;
+    transition: none;
+  }
+
+  /* ---- phones and tablets: copy on top, world below ---- */
+  @media (max-width: 60rem) {
+    .hs {
+      --len: 340vh;
+    }
+    .hs__stage {
+      background:
+        radial-gradient(70% 40% at 50% 78%, color-mix(in srgb, var(--butter) 34%, transparent) 0%, transparent 100%),
+        var(--paper);
+    }
+    .hs__copy {
+      justify-content: flex-start;
+      padding-top: calc(var(--header-h) + var(--space-4));
+    }
+    .hs__copy > * {
+      max-width: 34rem;
+    }
+    .hs__title {
+      font-size: clamp(1.75rem, 7.4vw, 3rem);
+    }
+    .hs__swap {
+      margin-top: var(--space-3);
+    }
+    .hs__sub {
+      font-size: var(--text-body);
+    }
+    .hs__verse blockquote {
+      font-size: 1.3rem;
+    }
+    .hs__cta {
+      margin-top: var(--space-4);
+    }
+  }
+</style>

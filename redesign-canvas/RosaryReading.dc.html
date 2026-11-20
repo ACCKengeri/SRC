@@ -1,0 +1,70 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300..800&family=Fraunces:ital,opsz,wght@0,9..144,300..500;1,9..144,300..500&display=swap');
+    :root{--paper:#F6F4EF;--ink:#141210;--blue:#1E51F7;--blue-ink:#9DB2FF}
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--ink);color:var(--paper);font-family:'Fraunces',Georgia,serif;
+      -webkit-font-smoothing:antialiased;min-height:100%}
+    .wrap{min-height:844px;display:flex;flex-direction:column;padding:22px}
+    .top{display:flex;justify-content:space-between;align-items:center;font-family:'Bricolage Grotesque',Arial,sans-serif;
+      font-size:12px;letter-spacing:0.06em;text-transform:uppercase;color:rgba(246,244,239,0.55)}
+    .top .close{width:44px;height:44px;border:1px solid rgba(246,244,239,0.3);border-radius:50%;
+      display:flex;align-items:center;justify-content:center}
+    .prog{margin-top:26px}
+    .prog .bar{height:2px;background:rgba(246,244,239,0.16);position:relative}
+    .prog .bar i{position:absolute;left:0;top:0;bottom:0;width:52%;background:var(--blue)}
+    .prog .t{margin-top:12px;font-family:'Bricolage Grotesque',Arial,sans-serif;font-size:13px;
+      letter-spacing:0.04em;color:rgba(246,244,239,0.6)}
+    .stage{flex:1;display:flex;flex-direction:column;justify-content:center;padding:20px 4px}
+    .stage .k{font-family:'Bricolage Grotesque',Arial,sans-serif;font-size:12px;letter-spacing:0.12em;
+      text-transform:uppercase;color:var(--blue-ink);margin-bottom:20px}
+    .stage h1{font-family:'Fraunces',Georgia,serif;font-weight:330;font-size:30px;line-height:1.45;margin:0;
+      color:var(--paper)}
+    .stage .beads{display:flex;gap:9px;margin-top:36px}
+    .stage .beads span{width:9px;height:9px;border-radius:50%;background:rgba(246,244,239,0.22)}
+    .stage .beads span.done{background:rgba(246,244,239,0.5)}
+    .stage .beads span.now{background:var(--blue);box-shadow:0 0 0 4px rgba(30,81,247,0.25)}
+    .ctl{display:flex;gap:12px}
+    .ctl button{flex:1;min-height:56px;border:1px solid rgba(246,244,239,0.3);background:transparent;color:var(--paper);
+      font-family:'Bricolage Grotesque',Arial,sans-serif;font-weight:600;font-size:15px;border-radius:2px}
+    .ctl button.next{background:var(--paper);color:var(--ink);border-color:var(--paper)}
+    .restart{text-align:center;margin-top:14px;font-family:'Bricolage Grotesque',Arial,sans-serif;font-size:13px;
+      color:rgba(246,244,239,0.5)}
+  </style>
+</helmet>
+<div class="wrap">
+  <div class="top">
+    <span>Sorrowful Mysteries</span>
+    <span class="close">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </span>
+  </div>
+  <div class="prog">
+    <div class="bar"><i></i></div>
+    <p class="t">Decade 3 of 5 — Hail Mary 6 of 10</p>
+  </div>
+  <div class="stage">
+    <p class="k">Third Sorrowful Mystery — The Crowning with Thorns</p>
+    <h1>Hail Mary, full of grace, the Lord is with thee. Blessed art thou amongst women, and blessed is the fruit of thy womb, Jesus.</h1>
+    <div class="beads">
+      <span class="done"></span><span class="done"></span><span class="done"></span><span class="done"></span><span class="done"></span>
+      <span class="now"></span><span></span><span></span><span></span><span></span>
+    </div>
+  </div>
+  <div class="ctl">
+    <button>Back</button>
+    <button class="next">Next</button>
+  </div>
+  <p class="restart">Start over</p>
+</div>
+</x-dc>
+</body>
+</html>

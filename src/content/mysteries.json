@@ -1,0 +1,50 @@
+[
+  {
+    "id": "joyful",
+    "name": "Joyful Mysteries",
+    "days": ["Monday", "Saturday"],
+    "mysteries": [
+      "The Annunciation",
+      "The Visitation",
+      "The Nativity",
+      "The Presentation in the Temple",
+      "The Finding of Jesus in the Temple"
+    ]
+  },
+  {
+    "id": "sorrowful",
+    "name": "Sorrowful Mysteries",
+    "days": ["Tuesday", "Friday"],
+    "mysteries": [
+      "The Agony in the Garden",
+      "The Scourging at the Pillar",
+      "The Crowning with Thorns",
+      "The Carrying of the Cross",
+      "The Crucifixion and Death"
+    ]
+  },
+  {
+    "id": "glorious",
+    "name": "Glorious Mysteries",
+    "days": ["Wednesday", "Sunday"],
+    "mysteries": [
+      "The Resurrection",
+      "The Ascension",
+      "The Descent of the Holy Spirit",
+      "The Assumption of Mary",
+      "The Coronation of Mary"
+    ]
+  },
+  {
+    "id": "luminous",
+    "name": "Luminous Mysteries",
+    "days": ["Thursday"],
+    "mysteries": [
+      "The Baptism in the Jordan",
+      "The Wedding at Cana",
+      "The Proclamation of the Kingdom",
+      "The Transfiguration",
+      "The Institution of the Eucharist"
+    ]
+  }
+]

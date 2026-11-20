@@ -1,0 +1,390 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Scripture from '../../components/Scripture.astro';
+import Needs from '../../components/Needs.astro';
+
+// Real embed for the actual Kengeri campus, from the previous site's
+// footer — loaded only on interaction, never on page load.
+const mapEmbedSrc =
+  'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3796.4602952788982!2d77.43629971030114!3d12.863339128212573!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bae472f365fe219%3A0xcae219b3b46324db!2sCHRIST%20(Deemed%20to%20be%20University)%20Bangalore%20Kengeri%20Campus!5e0!3m2!1sen!2sin!4v1719460544242!5m2!1sen!2sin';
+
+// The real, currently-live submission endpoint for this exact form
+// (ACC_website/js/javacont.js). Field names Name/MailId/Message match what
+// that backend already expects; do not rename them.
+const FORM_ENDPOINT =
+  'https://script.google.com/macros/s/AKfycbzQLkUQd4OR0DZaLzuEe0B-wYF7skYpzfELuaSbbuab2zkZSaJIV60RpuNDrcSJVSpCrg/exec';
+---
+
+<BaseLayout
+  title="Contact | Association of Christian Christites"
+  description="Send a prayer request or an enquiry to ACC Kengeri."
+>
+  <section class="head">
+    <h1>We Care.</h1>
+    <Scripture id="gathered" variant="quiet" />
+    <p class="head__intro">
+      When we bring a request before God together, it carries further. Share yours below, or
+      write to us directly if it isn't a prayer request.
+    </p>
+  </section>
+
+  <div class="split">
+    <form class="form sheet" id="contact-form" novalidate>
+      <div class="fld">
+        <label for="name">Your name</label>
+        <input type="text" id="name" name="Name" required autocomplete="name" placeholder="Anna Thomas" />
+      </div>
+
+      <div class="fld">
+        <label for="email">Your Christ email</label>
+        <input
+          type="email"
+          id="email"
+          name="MailId"
+          required
+          autocomplete="email"
+          placeholder="you@christuniversity.in"
+          aria-describedby="email-error"
+        />
+        <p class="fld__error" id="email-error" hidden>
+          That doesn't look like a christuniversity.in address. We ask for one just so we know
+          it's really you.
+        </p>
+      </div>
+
+      <div class="fld">
+        <label for="request-type">This is</label>
+        <select id="request-type" name="RequestType">
+          <option value="prayer">A prayer request</option>
+          <option value="question">A question</option>
+          <option value="other">Something else</option>
+        </select>
+      </div>
+
+      <div class="fld">
+        <label for="message">Your prayer request or message</label>
+        <textarea id="message" name="Message" rows="6" required></textarea>
+      </div>
+
+      <div class="fld fld--check">
+        <label class="check">
+          <input type="checkbox" id="private" name="Private" checked />
+          <span>Keep this private. It goes no further than whoever already reads the form.</span>
+        </label>
+        <Needs>NEEDS CONFIG: who actually reads these submissions</Needs>
+      </div>
+
+      <button class="btn" type="submit">Send</button>
+      <p class="form__status" id="form-status" role="status" aria-live="polite" hidden></p>
+    </form>
+
+    <aside class="after cast">
+      <div class="success ticket p-grain" id="success-state" hidden>
+        <h2>Received.</h2>
+        <p>This has reached us. We'll hold it in prayer.</p>
+        <button class="btn btn--ghost success__again" id="send-another" type="button">Send another</button>
+      </div>
+      <div class="mailus sheet p-seafoam">
+        <p class="after__k">Anything else</p>
+        <p>Write to us directly rather than using the form.</p>
+        <a href="mailto:acc.kengeri@christuniversity.in" data-live-mailto="email" data-live-text="email">acc.kengeri@christuniversity.in</a>
+      </div>
+    </aside>
+  </div>
+
+  <section class="map">
+    <p class="label">the chapel</p>
+    <div class="map__frame" id="map-frame">
+      <button class="map__load" id="map-load" type="button">
+        <span>CHRIST (Deemed to be University), Kengeri Campus, Bengaluru 560074</span>
+        <span class="map__load-cta">Show map</span>
+      </button>
+    </div>
+  </section>
+</BaseLayout>
+
+<script define:vars={{ mapEmbedSrc, FORM_ENDPOINT }} is:inline>
+  const emailPattern = /^[\w-]+(\.[\w-]+)*@(.*\.)?(christuniversity\.in)$/i;
+
+  const form = document.getElementById('contact-form');
+  const emailInput = document.getElementById('email');
+  const emailError = document.getElementById('email-error');
+  const statusEl = document.getElementById('form-status');
+  const successEl = document.getElementById('success-state');
+  const submitBtn = form.querySelector('button[type="submit"]');
+
+  function checkEmail() {
+    const valid = emailPattern.test(emailInput.value.trim());
+    emailError.hidden = valid;
+    emailInput.setAttribute('aria-invalid', String(!valid));
+    return valid;
+  }
+
+  // Once the error is showing, clear it the moment the address is fixed,
+  // rather than making them press Send again to find out.
+  emailInput.addEventListener('input', () => {
+    if (!emailError.hidden) checkEmail();
+  });
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    if (!checkEmail()) {
+      emailInput.focus();
+      return;
+    }
+
+    submitBtn.disabled = true;
+    statusEl.hidden = true;
+
+    try {
+      // URL-encoded, exactly as the previous site's jQuery serialize() sent it:
+      // the Apps Script reads e.parameter, which multipart bodies don't fill.
+      const body = new URLSearchParams(new FormData(form));
+      body.set('Private', form.querySelector('#private').checked ? 'yes' : 'no');
+      const res = await fetch(FORM_ENDPOINT, { method: 'POST', body });
+      if (!res.ok) throw new Error(`submit failed: ${res.status}`);
+
+      form.hidden = true;
+      successEl.hidden = false;
+      successEl.setAttribute('tabindex', '-1');
+      successEl.focus();
+    } catch (err) {
+      console.warn('Contact form submission failed.', err);
+      statusEl.hidden = false;
+      statusEl.textContent =
+        "That didn't go through. Please try again, or email acc.kengeri@christuniversity.in directly.";
+      submitBtn.disabled = false;
+    }
+  });
+
+  document.getElementById('send-another').addEventListener('click', () => {
+    form.reset();
+    emailError.hidden = true;
+    emailInput.removeAttribute('aria-invalid');
+    statusEl.hidden = true;
+    submitBtn.disabled = false;
+    successEl.hidden = true;
+    form.hidden = false;
+    document.getElementById('name').focus();
+  });
+
+  const mapLoadBtn = document.getElementById('map-load');
+  const mapFrame = document.getElementById('map-frame');
+  mapLoadBtn.addEventListener('click', () => {
+    const iframe = document.createElement('iframe');
+    iframe.src = mapEmbedSrc;
+    iframe.width = '100%';
+    iframe.height = '380';
+    iframe.style.border = '0';
+    iframe.loading = 'lazy';
+    iframe.referrerPolicy = 'no-referrer-when-downgrade';
+    iframe.setAttribute('aria-label', 'Map of the Kengeri campus');
+    mapFrame.innerHTML = '';
+    mapFrame.appendChild(iframe);
+  });
+</script>
+
+<style>
+  .head {
+    max-width: var(--container-wide);
+    margin: 0 auto;
+    padding: var(--space-9) var(--gutter) var(--space-5);
+  }
+  .head h1 {
+    font-size: var(--text-h1);
+  }
+  .head :global(.scripture-quiet) {
+    margin-top: var(--space-5);
+  }
+  .head__intro {
+    margin-top: var(--space-5);
+    max-width: 52ch;
+    color: var(--muted);
+  }
+
+  .split {
+    max-width: var(--container-wide);
+    margin: 0 auto;
+    padding: var(--space-7) var(--gutter) var(--space-7);
+    display: grid;
+    grid-template-columns: 1.3fr 1fr;
+    gap: var(--space-8);
+    align-items: start;
+  }
+
+  .fld {
+    margin-bottom: var(--space-5);
+  }
+  /* The form is one sheet of writing paper. */
+  .form {
+    padding: clamp(1.5rem, 4vw, 3rem);
+    box-shadow: var(--lift-2);
+  }
+  .fld label {
+    display: block;
+    font-size: var(--text-small);
+    font-weight: 600;
+    color: var(--ink-strong);
+    margin-bottom: var(--space-2);
+  }
+  .form input,
+  .form textarea,
+  .form select {
+    width: 100%;
+    border: 1px solid var(--field);
+    background: var(--paper);
+    padding: 0.85rem 1rem;
+    border-radius: var(--radius-xs);
+    box-shadow: inset 0 1px 2px rgba(11, 63, 67, 0.08);
+  }
+  .form select {
+    -webkit-appearance: none;
+    appearance: none;
+    cursor: pointer;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23135e63' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    padding-right: 2.5rem;
+  }
+  :global([data-theme='night']) .form select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23efdfbd' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  }
+  .form textarea {
+    min-height: 9rem;
+    resize: vertical;
+  }
+  .fld__error {
+    margin-top: var(--space-2);
+    font-size: var(--text-small);
+    font-weight: 600;
+    color: var(--danger);
+  }
+  .fld--check {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+  .check {
+    display: flex;
+    gap: var(--space-3);
+    align-items: flex-start;
+    font-size: var(--text-small);
+    color: var(--text);
+  }
+  .check input {
+    width: 1.25rem;
+    height: 1.25rem;
+    flex: 0 0 auto;
+    margin-top: 0.15rem;
+  }
+  .fld--check :global(.needs) {
+    align-self: flex-start;
+  }
+  .form__status {
+    margin-top: var(--space-4);
+    font-size: var(--text-small);
+    color: var(--ink);
+  }
+
+  .after {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+  }
+  .after__k {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: var(--text-small);
+    color: var(--ink-strong);
+    margin-bottom: var(--space-3);
+  }
+  /* The aside's pieces take one shared shadow from .cast: the received
+     note is a butter ticket, the email a seafoam card. */
+  .after > div {
+    padding: var(--space-6) var(--space-7);
+    box-shadow: none;
+  }
+  .success {
+    background-color: var(--butter);
+  }
+  .form input::placeholder {
+    color: var(--muted);
+    opacity: 1;
+  }
+  .success__again {
+    margin-top: var(--space-5);
+  }
+  .form[hidden],
+  .success[hidden] {
+    display: none;
+  }
+  .after h2 {
+    font-size: var(--text-h3);
+    margin-bottom: var(--space-3);
+    color: var(--ink-strong);
+  }
+  .after p {
+    color: var(--ink);
+    font-size: var(--text-small);
+  }
+  .after a {
+    display: inline-block;
+    margin-top: var(--space-3);
+    color: var(--ink-strong);
+    text-decoration: underline;
+    text-decoration-color: var(--coral);
+    text-decoration-thickness: 2px;
+    text-underline-offset: 0.35em;
+    font-weight: 600;
+    font-size: var(--text-small);
+  }
+
+  .map {
+    max-width: var(--container-wide);
+    margin: 0 auto;
+    padding: var(--space-5) var(--gutter) var(--space-10);
+  }
+  .map .label {
+    display: block;
+    margin-bottom: var(--space-4);
+  }
+  /* The map is mounted like a print: a paper mat, butter paper behind. */
+  .map__frame {
+    background: var(--raised);
+    border: 10px solid var(--sheet);
+    border-radius: var(--radius-sm);
+    box-shadow: 12px 14px 0 var(--butter), var(--lift-2);
+    overflow: hidden;
+    min-height: 12rem;
+  }
+  .map__load {
+    width: 100%;
+    min-height: 12rem;
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-3);
+    padding: var(--space-6);
+    color: var(--ink);
+    font-size: var(--text-small);
+  }
+  .map__load-cta {
+    border: 1px solid var(--teal);
+    color: var(--teal);
+    padding: 0.7rem 1.4rem;
+    font-weight: 600;
+    border-radius: var(--radius-pill);
+  }
+
+  @media (max-width: 56rem) {
+    .split {
+      grid-template-columns: 1fr;
+      gap: var(--space-6);
+    }
+  }
+</style>

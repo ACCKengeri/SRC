@@ -1,0 +1,256 @@
+---
+/*
+  A litany, typeset the way a printed one is: as call and answer, with the
+  answer set once for each run of lines that share it, not repeated under
+  every line.
+
+  - A call whose answer echoes it (Lord, have mercy. / Lord, have mercy.), or
+    a single call with its own answer, sits on one row: call, then answer.
+  - A short run of calls with the same answer (2 to 7) is bracketed, with the
+    answer once beside the bracket.
+  - A long run (the many titles of Mary, all answered "pray for us") gives the
+    answer once, large, and sets the calls in short columns, grouped where
+    they share a first word (Mother..., Virgin..., Queen...).
+
+  The lines are the same data as before (leader / all); only the setting is
+  worked out here.
+*/
+interface Line {
+  speaker: 'leader' | 'all';
+  text: string;
+}
+interface Props {
+  lines: Line[];
+}
+const { lines } = Astro.props;
+
+type Group =
+  | { kind: 'row'; call: string; answer: string }
+  | { kind: 'brace'; calls: string[]; answer: string }
+  | { kind: 'many'; clusters: string[][]; answer: string }
+  | { kind: 'solo'; text: string };
+
+// pair each leader line with the answer that follows it
+const pairs: ({ call: string; answer: string } | { solo: string })[] = [];
+for (let i = 0; i < lines.length; i++) {
+  const l = lines[i], next = lines[i + 1];
+  if (l.speaker === 'leader' && next && next.speaker === 'all') {
+    pairs.push({ call: l.text, answer: next.text });
+    i++;
+  } else pairs.push({ solo: l.text });
+}
+
+// runs of calls that share one answer (an echoed answer never runs on)
+const groups: Group[] = [];
+for (let i = 0; i < pairs.length; ) {
+  const p = pairs[i];
+  if ('solo' in p) {
+    groups.push({ kind: 'solo', text: p.solo });
+    i++;
+    continue;
+  }
+  let j = i + 1;
+  if (p.call !== p.answer) {
+    while (j < pairs.length) {
+      const q = pairs[j];
+      if ('solo' in q || q.answer !== p.answer || q.call === q.answer) break;
+      j++;
+    }
+  }
+  const calls = (pairs.slice(i, j) as { call: string; answer: string }[]).map((q) => q.call);
+  if (calls.length === 1) groups.push({ kind: 'row', call: calls[0], answer: p.answer });
+  else if (calls.length < 8) groups.push({ kind: 'brace', calls, answer: p.answer });
+  else {
+    // cluster by shared first word; short runs gather into one cluster
+    const word = (t: string) => t.split(/[\s,]+/)[0];
+    const runs: string[][] = [];
+    for (const c of calls) {
+      const last = runs[runs.length - 1];
+      if (last && word(last[0]) === word(c)) last.push(c);
+      else runs.push([c]);
+    }
+    const clusters: string[][] = [];
+    let loose: string[] | null = null;
+    for (const r of runs) {
+      if (r.length >= 4) {
+        loose = null;
+        clusters.push(r);
+      } else {
+        if (!loose) {
+          loose = [];
+          clusters.push(loose);
+        }
+        loose.push(...r);
+      }
+    }
+    groups.push({ kind: 'many', clusters, answer: p.answer });
+  }
+  i = j;
+}
+---
+
+<div class="litany-set">
+  {
+    groups.map((g) =>
+      g.kind === 'row' ? (
+        <div class="lt-row">
+          <p class="lt-call">{g.call}</p>
+          <p class="lt-answer">{g.answer}</p>
+        </div>
+      ) : g.kind === 'brace' ? (
+        <div class="lt-row lt-row--brace">
+          <ul class="lt-calls">
+            {g.calls.map((c) => (
+              <li class="lt-call">{c}</li>
+            ))}
+          </ul>
+          <p class="lt-answer">
+            <span class="lt-each">after each line</span>
+            {g.answer}
+          </p>
+        </div>
+      ) : g.kind === 'many' ? (
+        <div class="lt-many">
+          <p class="lt-many__answer">
+            <span class="lt-each">After each line, all answer</span>
+            <span class="lt-many__words">{g.answer}</span>
+          </p>
+          <div class="lt-many__cols">
+            {g.clusters.map((cl) => (
+              <ul class:list={['lt-cluster', { 'lt-cluster--keep': cl.length <= 7 }]}>
+                {cl.map((c) => (
+                  <li class="lt-call">{c}</li>
+                ))}
+              </ul>
+            ))}
+          </div>
+        </div>
+      ) : (
+        <p class="lt-solo">{g.text}</p>
+      ),
+    )
+  }
+</div>
+
+<style>
+  .litany-set {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    font-family: var(--font-read);
+    font-size: clamp(1.1rem, 1.4vw, 1.25rem);
+    line-height: 1.5;
+  }
+  .lt-call,
+  .lt-solo {
+    margin: 0;
+    color: var(--ink);
+  }
+  .lt-answer {
+    margin: 0;
+    color: var(--ink-strong);
+    font-weight: 600;
+    font-style: italic;
+  }
+  .lt-each {
+    display: block;
+    font-family: var(--font-display);
+    font-style: normal;
+    font-weight: 600;
+    font-size: var(--text-micro);
+    color: var(--coral-text);
+  }
+
+  /* call and answer on one row, ruled off from the next */
+  .lt-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+    gap: var(--space-2) var(--space-6);
+    align-items: baseline;
+    padding-bottom: var(--space-3);
+    border-bottom: 1px dashed var(--hair);
+  }
+
+  /* a short run: the calls, a paper bracket, the answer once */
+  .lt-row--brace {
+    align-items: center;
+  }
+  .lt-calls {
+    list-style: none;
+    margin: 0;
+    padding: 0 var(--space-6) 0 0;
+    position: relative;
+  }
+  .lt-row--brace .lt-calls::after {
+    content: '';
+    position: absolute;
+    top: 0.35em;
+    bottom: 0.35em;
+    right: 0;
+    width: 12px;
+    border: 2px solid var(--coral);
+    border-left: 0;
+    border-radius: 0 10px 10px 0;
+  }
+  .lt-row--brace .lt-answer {
+    position: relative;
+  }
+
+  /* the long run: the answer once, large, and the calls in short columns */
+  .lt-many {
+    margin: var(--space-4) 0;
+    padding: var(--space-6) clamp(1rem, 3vw, 2rem);
+    border-radius: var(--radius-sm);
+    background-color: var(--teal-wash);
+  }
+  .lt-many__answer {
+    margin: 0 0 var(--space-5);
+  }
+  .lt-many__words {
+    display: block;
+    font-style: italic;
+    font-weight: 600;
+    font-size: clamp(1.6rem, 3vw, 2.2rem);
+    line-height: 1.15;
+    color: var(--ink-strong);
+  }
+  .lt-many__cols {
+    columns: 3 13rem;
+    column-gap: var(--space-7);
+  }
+  .lt-cluster {
+    list-style: none;
+    margin: 0 0 var(--space-5);
+    padding: 0;
+  }
+  /* a call never splits across columns; long groups may, so the columns
+     balance, but a short group stays together */
+  .lt-cluster .lt-call {
+    break-inside: avoid;
+  }
+  .lt-cluster--keep {
+    break-inside: avoid;
+  }
+  .lt-cluster .lt-call {
+    padding: 0.15rem 0;
+  }
+
+  @media (max-width: 40rem) {
+    .lt-row {
+      grid-template-columns: 1fr;
+    }
+    .lt-row .lt-answer {
+      padding-left: var(--space-5);
+    }
+    .lt-calls {
+      padding-right: 0;
+    }
+    .lt-row--brace .lt-calls {
+      padding-left: var(--space-4);
+      border-left: 2px solid var(--coral);
+    }
+    .lt-row--brace .lt-calls::after {
+      display: none;
+    }
+  }
+</style>

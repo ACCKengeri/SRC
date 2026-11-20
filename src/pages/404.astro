@@ -1,0 +1,71 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { primaryNav } from '../lib/nav';
+
+const base = import.meta.env.BASE_URL;
+---
+
+<BaseLayout
+  title="Page not found | Association of Christian Christites"
+  description="That page doesn't exist. Here's how to find your way back."
+>
+  <div class="nf-wrap cast">
+  <section class="nf sheet torn-top">
+    <p class="label">404</p>
+    <h1>We couldn't find<br />that page.</h1>
+    <p class="nf__copy">
+      The link might be old, or the address mistyped. Either way, you haven't lost your place.
+      Here's where to go next.
+    </p>
+    <a class="btn--link" href={base}>Back to Home</a>
+    <nav class="nf__links" aria-label="Other pages">
+      {primaryNav.map((l) => <a href={`${base}${l.slug}/`}>{l.label}</a>)}
+    </nav>
+  </section>
+  </div>
+</BaseLayout>
+
+<style>
+  /* A note on one torn sheet: the page that was here has been torn out. */
+  .nf-wrap {
+    max-width: 46rem;
+    margin: var(--space-9) auto var(--space-10);
+    padding: 0 var(--gutter);
+  }
+  .nf {
+    padding: clamp(2.5rem, 7vw, 4.5rem) clamp(1.5rem, 5vw, 3.5rem);
+    transform: rotate(-0.6deg);
+  }
+  .nf .label {
+    display: block;
+    margin-bottom: var(--space-5);
+  }
+  .nf h1 {
+    font-size: var(--text-h1);
+    color: var(--teal);
+  }
+  .nf__copy {
+    margin: var(--space-5) 0 var(--space-6);
+    color: var(--text-muted);
+    font-size: var(--text-lead);
+    max-width: 44ch;
+  }
+  .nf__links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-5);
+    margin-top: var(--space-7);
+    padding-top: var(--space-6);
+    border-top: 2px dashed var(--hair);
+  }
+  .nf__links a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    color: var(--muted);
+    font-size: var(--text-small);
+  }
+  .nf__links a:hover {
+    color: var(--teal);
+  }
+</style>

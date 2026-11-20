@@ -1,0 +1,665 @@
+---
+import { getCollection, type CollectionEntry } from 'astro:content';
+import { buildRosarySequence } from '../lib/rosary';
+
+const prayerEntries = await getCollection('prayers');
+const prayers: Record<string, { title: string; lines: { speaker: string; text: string }[] }> = {};
+for (const p of prayerEntries) {
+  prayers[p.data.id] = { title: p.data.title, lines: p.data.lines };
+}
+
+const mysteryOrder = ['joyful', 'sorrowful', 'glorious', 'luminous'];
+const mysteryEntries = await getCollection('mysteries');
+const mysteriesById = new Map<string, CollectionEntry<'mysteries'>['data']>(
+  mysteryEntries.map((m) => [m.data.id, m.data])
+);
+const mysteries = mysteryOrder.map((id) => mysteriesById.get(id)!).filter(Boolean);
+
+const sequences: Record<string, ReturnType<typeof buildRosarySequence>> = {};
+for (const m of mysteries) {
+  sequences[m.id] = buildRosarySequence(m);
+}
+
+const payload = JSON.stringify({ prayers, mysteries, sequences }).replace(/<\//g, '<\\/');
+
+// "Joyful Mysteries" -> "Joyful": the section heading already says Rosary.
+const shortName = (name: string) => name.replace(/\s+Mysteries$/i, '');
+---
+
+<div class="rosary" id="rosary">
+  <div class="rosary__picker">
+    {
+      mysteries.map((m) => (
+        <button class="rosary__pick" data-set={m.id} type="button">
+          <span class="rosary__pick-days">{m.days.join(' & ')}</span>
+          <span class="rosary__pick-name">{shortName(m.name)}</span>
+          <span class="rosary__pick-badge" hidden>Today</span>
+        </button>
+      ))
+    }
+  </div>
+
+  <button class="rosary__resume" id="rosary-resume" type="button" hidden></button>
+
+  <div class="rosary__overlay on-deep" id="rosary-overlay" role="dialog" aria-modal="true" aria-label="The Rosary" hidden>
+    <div class="rosary__panel">
+      <header class="rosary__header">
+        <p class="rosary__set-name" id="rosary-set-name"></p>
+        <button class="rosary__close" id="rosary-close" type="button" aria-label="Close">
+          &times;
+        </button>
+      </header>
+
+      <div class="rosary__meter">
+        <div class="rosary__bar" aria-hidden="true"><i id="rosary-bar"></i></div>
+        <p class="rosary__progress" id="rosary-progress" aria-live="polite"></p>
+      </div>
+
+      <div class="rosary__stage">
+        <p class="rosary__context" id="rosary-context" hidden></p>
+        <div class="rosary__body" id="rosary-stage"></div>
+        <div class="rosary__beads" id="rosary-beads" aria-hidden="true" hidden>
+          {Array.from({ length: 10 }, () => <span></span>)}
+        </div>
+      </div>
+
+      <div class="rosary__controls">
+        <button class="rosary__nav" id="rosary-prev" type="button">Back</button>
+        <button class="rosary__nav rosary__nav--restart" id="rosary-restart" type="button">
+          Start over
+        </button>
+        <button class="rosary__nav rosary__nav--next" id="rosary-next" type="button">Next</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="application/json" id="rosary-data" is:inline set:html={payload} />
+
+<script>
+  interface Line {
+    speaker: 'leader' | 'all';
+    text: string;
+  }
+  interface Prayer {
+    title: string;
+    lines: Line[];
+  }
+  interface Mystery {
+    id: string;
+    name: string;
+    days: string[];
+    mysteries: string[];
+  }
+  interface Bead {
+    kind: 'prayer' | 'mystery';
+    prayerId?: string;
+    mysteryTitle?: string;
+    decade?: number;
+    beadInDecade?: number;
+  }
+  interface RosaryData {
+    prayers: Record<string, Prayer>;
+    mysteries: Mystery[];
+    sequences: Record<string, Bead[]>;
+  }
+
+  const dataEl = document.getElementById('rosary-data');
+  if (!dataEl) throw new Error('rosary data missing');
+  const data: RosaryData = JSON.parse(dataEl.textContent || '{}');
+
+  const ORDINAL = ['First', 'Second', 'Third', 'Fourth', 'Fifth'];
+  const STORAGE_SET = 'acc-rosary-set';
+  const STORAGE_INDEX = 'acc-rosary-position';
+
+  const root = document.getElementById('rosary')!;
+  const overlay = document.getElementById('rosary-overlay')!;
+  // Authored inside <main>, which goes inert while reading. Re-home the
+  // overlay to <body> so it isn't made inert along with the page behind it.
+  document.body.appendChild(overlay);
+  const setNameEl = document.getElementById('rosary-set-name')!;
+  const progressEl = document.getElementById('rosary-progress')!;
+  const stageEl = document.getElementById('rosary-stage')!;
+  const contextEl = document.getElementById('rosary-context')!;
+  const barEl = document.getElementById('rosary-bar')!;
+  const beadsEl = document.getElementById('rosary-beads')!;
+  const beadDots = Array.from(beadsEl.querySelectorAll<HTMLElement>('span'));
+  const resumeBtn = document.getElementById('rosary-resume') as HTMLButtonElement;
+  const closeBtn = document.getElementById('rosary-close')!;
+  const prevBtn = document.getElementById('rosary-prev') as HTMLButtonElement;
+  const nextBtn = document.getElementById('rosary-next') as HTMLButtonElement;
+  const restartBtn = document.getElementById('rosary-restart')!;
+  const pickButtons = Array.from(root.querySelectorAll<HTMLButtonElement>('.rosary__pick'));
+
+  let currentSetId = '';
+  let currentIndex = 0;
+  let lastFocused: HTMLElement | null = null;
+
+  function todaysSet(): string {
+    const day = new Date().getDay(); // 0 Sun .. 6 Sat
+    if (day === 1 || day === 6) return 'joyful';
+    if (day === 2 || day === 5) return 'sorrowful';
+    if (day === 4) return 'luminous';
+    return 'glorious'; // Wed, Sun
+  }
+
+  function savedProgress(): { setId: string; index: number } | null {
+    const setId = localStorage.getItem(STORAGE_SET);
+    const indexRaw = localStorage.getItem(STORAGE_INDEX);
+    if (!setId || indexRaw === null || !data.sequences[setId]) return null;
+    const index = Number(indexRaw);
+    if (!Number.isInteger(index) || index < 0 || index >= data.sequences[setId].length) return null;
+    return { setId, index };
+  }
+
+  const shortName = (name: string) => name.replace(/\s+Mysteries$/i, '');
+
+  function positionLabel(setId: string, index: number): string {
+    const bead = data.sequences[setId][index];
+    if (bead.decade) return `decade ${bead.decade} of 5`;
+    return index < 7 ? 'opening prayers' : 'closing prayers';
+  }
+
+  function labelPickButtons() {
+    const saved = savedProgress();
+    const suggested = todaysSet();
+    pickButtons.forEach((btn) => {
+      const isToday = btn.dataset.set === suggested;
+      btn.classList.toggle('rosary__pick--today', isToday);
+      const badge = btn.querySelector<HTMLElement>('.rosary__pick-badge');
+      if (badge) badge.hidden = !isToday;
+    });
+    // A rosary already in progress gets its own way back in, separate from
+    // the day's suggested set, so both are visible at once.
+    if (saved) {
+      const mystery = data.mysteries.find((m) => m.id === saved.setId)!;
+      resumeBtn.textContent = `Resume ${shortName(mystery.name)}, ${positionLabel(saved.setId, saved.index)}`;
+      resumeBtn.hidden = false;
+    } else {
+      resumeBtn.hidden = true;
+    }
+  }
+
+  function persist() {
+    localStorage.setItem(STORAGE_SET, currentSetId);
+    localStorage.setItem(STORAGE_INDEX, String(currentIndex));
+  }
+
+  function clearProgress() {
+    localStorage.removeItem(STORAGE_SET);
+    localStorage.removeItem(STORAGE_INDEX);
+  }
+
+  function renderBead() {
+    const seq = data.sequences[currentSetId];
+    const bead = seq[currentIndex];
+    const mystery = data.mysteries.find((m) => m.id === currentSetId)!;
+    setNameEl.textContent = mystery.name;
+
+    // Controls first, so every step (mystery announcements included) leaves
+    // Back / Next in the right state.
+    prevBtn.disabled = currentIndex === 0;
+    nextBtn.textContent = currentIndex === seq.length - 1 ? 'Finish' : 'Next';
+    barEl.style.transform = `scaleX(${(currentIndex + 1) / seq.length})`;
+
+    if (bead.decade) {
+      const beadPart = bead.beadInDecade ? `, Hail Mary ${bead.beadInDecade} of 10` : '';
+      progressEl.textContent = `Decade ${bead.decade} of 5${beadPart}`;
+    } else if (currentIndex < 7) {
+      progressEl.textContent = 'Opening prayers';
+    } else {
+      progressEl.textContent = 'Closing prayers';
+    }
+
+    // Ten beads for the decade in hand: before the Hail Marys none are done,
+    // after them all ten are.
+    if (bead.decade && bead.kind === 'prayer') {
+      const done = bead.beadInDecade ? bead.beadInDecade - 1 : bead.prayerId === 'our-father' ? 0 : 10;
+      beadDots.forEach((dot, i) => {
+        dot.className = i < done ? 'is-done' : i === done && bead.beadInDecade ? 'is-now' : '';
+      });
+      beadsEl.hidden = false;
+    } else {
+      beadsEl.hidden = true;
+    }
+
+    stageEl.innerHTML = '';
+    const mysteryTitle = bead.decade ? mystery.mysteries[bead.decade - 1] : '';
+    if (bead.kind === 'mystery' && bead.decade) {
+      contextEl.hidden = true;
+      const k = document.createElement('p');
+      k.className = 'rosary__mystery-k';
+      k.textContent = `${ORDINAL[bead.decade - 1]} ${shortName(mystery.name)} Mystery`;
+      const h = document.createElement('p');
+      h.className = 'rosary__mystery';
+      h.textContent = bead.mysteryTitle ?? mysteryTitle;
+      stageEl.append(k, h);
+      return;
+    }
+
+    // Keep the mystery being prayed in view above every prayer of its decade.
+    if (bead.decade) {
+      contextEl.textContent = `${ORDINAL[bead.decade - 1]} ${shortName(mystery.name)} Mystery: ${mysteryTitle}`;
+      contextEl.hidden = false;
+    } else {
+      contextEl.hidden = true;
+    }
+
+    const prayer = data.prayers[bead.prayerId!];
+    const wrap = document.createElement('div');
+    wrap.className = 'rosary__prayer';
+    const title = document.createElement('p');
+    title.className = 'rosary__prayer-title';
+    title.textContent = prayer.title;
+    wrap.appendChild(title);
+    const isDialogue = prayer.lines.length > 1;
+    for (const line of prayer.lines) {
+      const p = document.createElement('p');
+      p.className = isDialogue ? `rosary__line rosary__line--${line.speaker}` : 'rosary__line rosary__line--solo';
+      p.textContent = line.text;
+      wrap.appendChild(p);
+    }
+    stageEl.appendChild(wrap);
+  }
+
+  function open(setId: string, index: number) {
+    currentSetId = setId;
+    currentIndex = index;
+    renderBead();
+    lastFocused = document.activeElement as HTMLElement;
+    overlay.hidden = false;
+    document.body.style.overflow = 'hidden';
+    const main = document.querySelector('main');
+    main?.setAttribute('inert', '');
+    document.querySelector('.site-header')?.setAttribute('inert', '');
+    document.querySelector('footer')?.setAttribute('inert', '');
+    closeBtn.focus();
+    document.addEventListener('keydown', onKeydown);
+  }
+
+  function close() {
+    overlay.hidden = true;
+    document.body.style.overflow = '';
+    const main = document.querySelector('main');
+    main?.removeAttribute('inert');
+    document.querySelector('.site-header')?.removeAttribute('inert');
+    document.querySelector('footer')?.removeAttribute('inert');
+    document.removeEventListener('keydown', onKeydown);
+    lastFocused?.focus();
+    labelPickButtons();
+  }
+
+  function onKeydown(e: KeyboardEvent) {
+    if (e.key === 'Escape') {
+      close();
+      return;
+    }
+    if (e.key === 'Tab') {
+      const focusable = [closeBtn, prevBtn, restartBtn, nextBtn].filter((el) => !(el as HTMLButtonElement).disabled);
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    }
+  }
+
+  pickButtons.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const id = btn.dataset.set!;
+      const saved = savedProgress();
+      const startIndex = saved && saved.setId === id ? saved.index : 0;
+      open(id, startIndex);
+      persist();
+    });
+  });
+
+  resumeBtn.addEventListener('click', () => {
+    const saved = savedProgress();
+    if (saved) open(saved.setId, saved.index);
+  });
+
+  closeBtn.addEventListener('click', close);
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) close();
+  });
+
+  prevBtn.addEventListener('click', () => {
+    if (currentIndex > 0) {
+      currentIndex -= 1;
+      renderBead();
+      persist();
+    }
+  });
+
+  nextBtn.addEventListener('click', () => {
+    const seq = data.sequences[currentSetId];
+    if (currentIndex < seq.length - 1) {
+      currentIndex += 1;
+      renderBead();
+      persist();
+    } else {
+      clearProgress();
+      close();
+    }
+  });
+
+  restartBtn.addEventListener('click', () => {
+    currentIndex = 0;
+    renderBead();
+    persist();
+  });
+
+  labelPickButtons();
+</script>
+
+<style>
+  .rosary__picker {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+    gap: var(--space-4);
+    margin-top: var(--space-7);
+  }
+
+  /* The picker renders on the dark Prayers section — light-on-ink. */
+  .rosary__pick {
+    background: transparent;
+    border: 1px solid var(--hair-on-deep);
+    border-radius: var(--radius-md);
+    padding: var(--space-5);
+    text-align: left;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    min-height: 44px;
+    color: var(--on-deep);
+    transition: border-color var(--duration-medium) var(--ease-soft),
+      background-color var(--duration-medium) var(--ease-soft);
+  }
+
+  .rosary__pick:hover {
+    border-color: var(--mark);
+    background: color-mix(in srgb, var(--mark) 12%, transparent);
+  }
+
+  .rosary__pick--today {
+    border-color: var(--mark);
+  }
+
+  .rosary__pick-badge[hidden] {
+    display: none;
+  }
+
+  .rosary__pick-badge {
+    align-self: flex-start;
+    display: inline-flex;
+    padding: 0.125rem 0.5rem;
+    background: var(--mark);
+    color: var(--teal-deep);
+    border-radius: var(--radius-pill);
+    font-size: var(--text-micro);
+    font-weight: 700;
+  }
+
+  .rosary__pick-name {
+    font-family: var(--font-display);
+    font-size: var(--text-h4);
+    font-weight: 700;
+  }
+
+  .rosary__pick-days {
+    color: var(--muted-on-deep);
+    font-size: var(--text-small);
+  }
+
+  .rosary__resume {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-3);
+    min-height: 52px;
+    margin-top: var(--space-6);
+    padding: var(--space-3) var(--space-5);
+    border: 1px solid var(--mark);
+    border-radius: var(--radius-pill);
+    background: var(--mark);
+    color: var(--teal-deep);
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: var(--text-small);
+    cursor: pointer;
+    transition: transform var(--duration-quick) var(--ease-quick);
+  }
+  .rosary__resume:active {
+    transform: translateY(1px);
+  }
+  .rosary__resume[hidden] {
+    display: none;
+  }
+
+  .rosary__overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    background: var(--teal-deep);
+    display: flex;
+    align-items: stretch;
+    justify-content: center;
+    padding: 0;
+  }
+
+  /* The class selector above outranks the UA stylesheet's own
+     `[hidden] { display: none }`, so without this the overlay showed on
+     every page load regardless of the `hidden` attribute — the "Prayers
+     page is broken" bug. */
+  .rosary__overlay[hidden] {
+    display: none;
+  }
+
+  .rosary__panel {
+    background: var(--teal-deep);
+    color: var(--on-deep);
+    padding: var(--space-6) var(--gutter) var(--space-6);
+    max-width: 44rem;
+    width: 100%;
+    max-height: 100svh;
+    min-height: min(100svh, 40rem);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+  }
+
+  .rosary__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+  }
+
+  .rosary__set-name {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: var(--text-small);
+    font-weight: 700;
+    color: var(--mark);
+  }
+
+  .rosary__close {
+    background: none;
+    border: 1px solid var(--hair-on-deep);
+    border-radius: 50%;
+    font-size: 1.4rem;
+    line-height: 1;
+    color: var(--on-deep);
+    cursor: pointer;
+    width: 44px;
+    height: 44px;
+  }
+
+  .rosary__bar {
+    height: 2px;
+    background: var(--hair-on-deep);
+    overflow: hidden;
+  }
+  .rosary__bar i {
+    display: block;
+    height: 100%;
+    background: var(--mark);
+    transform-origin: left center;
+    transform: scaleX(0);
+    transition: transform var(--duration-medium) var(--ease-soft);
+  }
+
+  .rosary__progress {
+    margin: var(--space-3) 0 0;
+    font-size: var(--text-small);
+    color: var(--muted-on-deep);
+    font-family: var(--font-display);
+  }
+
+  .rosary__stage {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    text-align: left;
+    min-height: 12rem;
+  }
+
+  .rosary__context,
+  .rosary__stage :global(.rosary__mystery-k) {
+    margin: 0 0 var(--space-5);
+    font-family: var(--font-display);
+    font-size: var(--text-micro);
+    font-weight: 700;
+    color: var(--mark);
+    line-height: 1.5;
+  }
+  .rosary__context[hidden] {
+    display: none;
+  }
+
+  .rosary__beads {
+    display: flex;
+    gap: 0.6rem;
+    margin-top: var(--space-7);
+  }
+  .rosary__beads[hidden] {
+    display: none;
+  }
+  .rosary__beads span {
+    width: 0.6rem;
+    height: 0.6rem;
+    border-radius: 50%;
+    background: var(--hair-on-deep);
+    transition: background-color var(--duration-quick) var(--ease-quick);
+  }
+  .rosary__beads span:global(.is-done) {
+    background: var(--muted-on-deep);
+  }
+  .rosary__beads span:global(.is-now) {
+    background: var(--mark);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--mark) 25%, transparent);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .rosary__bar i,
+    .rosary__beads span,
+    .rosary__resume {
+      transition: none;
+    }
+  }
+
+  .rosary__stage :global(.rosary__mystery) {
+    font-family: var(--font-read);
+    font-weight: 400;
+    font-size: var(--text-h3);
+    line-height: 1.35;
+    margin: 0;
+  }
+
+  .rosary__stage :global(.rosary__prayer) {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    width: 100%;
+  }
+
+  .rosary__stage :global(.rosary__prayer-title) {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: var(--text-micro);
+    font-weight: 700;
+    font-size: var(--text-small);
+    color: var(--mark);
+  }
+
+  .rosary__stage :global(.rosary__line) {
+    margin: 0;
+    font-family: var(--font-read);
+    font-weight: 400;
+    font-size: clamp(1.5rem, 3.5vw, 2rem);
+    line-height: 1.45;
+  }
+
+  .rosary__stage :global(.rosary__line--all) {
+    font-weight: 500;
+    padding-left: var(--space-4);
+    border-left: 2px solid var(--mark);
+  }
+
+  .rosary__controls {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: var(--space-4);
+  }
+
+  .rosary__nav {
+    min-height: 52px;
+    padding: var(--space-3) var(--space-5);
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--hair-on-deep);
+    background: transparent;
+    color: var(--on-deep);
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: var(--text-small);
+    cursor: pointer;
+  }
+
+  .rosary__nav:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  .rosary__nav--next {
+    background: var(--mark);
+    color: var(--teal-deep);
+    border-color: var(--mark);
+  }
+
+  .rosary__nav--restart {
+    border: none;
+    background: none;
+    color: var(--muted-on-deep);
+    font-weight: 500;
+    text-decoration: underline;
+    text-decoration-color: var(--hair-on-deep);
+  }
+
+  @media (max-width: 34rem) {
+    .rosary__controls {
+      grid-template-columns: 1fr 1fr;
+    }
+    .rosary__nav--restart {
+      grid-column: 1 / -1;
+      order: 3;
+    }
+  }
+</style>

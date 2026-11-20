@@ -1,0 +1,228 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PrayerDialogue from '../../components/PrayerDialogue.astro';
+import Disclosure from '../../components/Disclosure.astro';
+import RosaryPlayer from '../../components/RosaryPlayer.astro';
+import PaperEdge from '../../components/PaperEdge.astro';
+import Litany from '../../components/Litany.astro';
+
+const allPrayers = await getCollection('prayers');
+const byId = new Map(allPrayers.map((p) => [p.data.id, p.data]));
+
+const commonOrder = [
+  'sign-of-the-cross',
+  'our-father',
+  'hail-mary',
+  'glory-be',
+  'apostles-creed',
+  'fatima-prayer',
+  'hail-holy-queen',
+];
+const common = commonOrder.map((id) => byId.get(id)!).filter(Boolean);
+const litany = byId.get('litany-of-loreto')!;
+
+const mysteryOrder = ['joyful', 'sorrowful', 'glorious', 'luminous'];
+const mysteryEntries = await getCollection('mysteries');
+const mysteriesById = new Map(mysteryEntries.map((m) => [m.data.id, m.data]));
+const mysteries = mysteryOrder.map((id) => mysteriesById.get(id)!).filter(Boolean);
+// Each set of mysteries is a card in its own paper.
+const MYS_PAPER: Record<string, string> = {
+  joyful: 'p-butter',
+  sorrowful: 'p-sky',
+  glorious: 'p-peach',
+  luminous: 'p-seafoam',
+};
+---
+
+<BaseLayout
+  title="Prayers | Association of Christian Christites"
+  description="Common prayers, the Rosary, the Mysteries, and the Litany of the Blessed Virgin Mary, typeset as dialogue between leader and congregation."
+>
+  <section class="head">
+    <h1>Said together.</h1>
+    <p class="head__lead">
+      Prayer is a dialogue: a line spoken, a line answered. Everything here is typeset that
+      way: the leader's line plain, the response set apart, no icons standing in for the
+      difference.
+    </p>
+  </section>
+  <PaperEdge layers={['var(--butter)', 'var(--seafoam)', 'var(--paper)']} seed={33} />
+
+  <section class="sec" aria-labelledby="common-heading">
+    <h2 id="common-heading" class="label sec__label">common prayers</h2>
+    <div class="acc">
+      {
+        common.map((p, i) => (
+          <Disclosure heading={p.title} group="prayers" open={i === 1}>
+            <PrayerDialogue lines={p.lines} />
+          </Disclosure>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="rosary" aria-labelledby="rosary-heading">
+    <div class="rosary__in sheet p-deep on-deep">
+      <p class="label rosary__label">the rosary</p>
+      <h2 id="rosary-heading">A decade at a time, and it remembers where you stopped.</h2>
+      <p class="rosary__lead">
+        Choose a set of mysteries and enter the reading mode: larger type, nothing else on the
+        screen, one bead in view. Close it whenever; it keeps your place until you finish.
+      </p>
+      <RosaryPlayer />
+    </div>
+  </section>
+
+  <section class="sec" aria-labelledby="mysteries-heading">
+    <h2 id="mysteries-heading" class="label sec__label">the mysteries</h2>
+    <div class="mys">
+      {
+        mysteries.map((m, i) => (
+          <div
+            class:list={['mys__c', 'sheet', 'sheet--card', 'reveal-lay', MYS_PAPER[m.id] ?? 'p-sheet']}
+            style={`--reveal-i:${i % 2};--lay-r:${i % 2 ? -1.4 : 1.4}deg`}
+          >
+            <p class="mys__days">{m.days.join(' & ')}</p>
+            <h3 class="mys__name">{m.name}</h3>
+            <ol class="mys__list">
+              {m.mysteries.map((title) => (
+                <li>{title}</li>
+              ))}
+            </ol>
+          </div>
+        ))
+      }
+    </div>
+  </section>
+
+  <div class="cast">
+  <section class="litany sheet torn-top" aria-labelledby="litany-heading">
+    <h2 id="litany-heading" class="label sec__label">litany of the blessed virgin mary</h2>
+    <p class="litany__note">The Litany of Loreto, in full.</p>
+    <Litany lines={litany.lines} />
+  </section>
+  </div>
+</BaseLayout>
+
+<style>
+  .head {
+    max-width: 56rem;
+    margin: 0 auto;
+    padding: var(--space-9) var(--gutter) var(--space-7);
+  }
+  .head .label {
+    display: block;
+    margin-bottom: var(--space-5);
+  }
+  .head h1 {
+    font-size: var(--text-h1);
+    letter-spacing: -0.035em;
+    color: var(--teal);
+  }
+  .head__lead {
+    margin-top: var(--space-5);
+    font-family: var(--font-read);
+    font-weight: 400;
+    font-size: clamp(1.25rem, 1.7vw, 1.45rem);
+    line-height: 1.5;
+    max-width: 52ch;
+  }
+
+  .sec {
+    max-width: 68rem;
+    margin: 0 auto;
+    padding: var(--space-7) var(--gutter);
+  }
+  .sec__label {
+    display: block;
+    margin-bottom: var(--space-6);
+  }
+
+  .rosary {
+    max-width: 72rem;
+    margin: var(--space-7) auto;
+    padding: 0 var(--gutter);
+  }
+  .rosary__in {
+    color: var(--on-deep);
+    padding: clamp(2.5rem, 6vw, 5rem);
+    box-shadow: var(--lift-2);
+  }
+  .rosary__label {
+    color: var(--mark-text);
+    display: block;
+    margin-bottom: var(--space-5);
+  }
+  .rosary h2 {
+    font-size: var(--text-h2);
+    letter-spacing: -0.03em;
+    max-width: 16ch;
+  }
+  .rosary__lead {
+    margin-top: var(--space-5);
+    font-family: var(--font-read);
+    font-weight: 400;
+    font-size: clamp(1.2rem, 1.6vw, 1.35rem);
+    line-height: 1.6;
+    max-width: 54ch;
+    color: var(--muted-on-deep);
+  }
+
+  .mys {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: clamp(1.25rem, 3vw, 2rem);
+  }
+  .mys__c {
+    padding: var(--space-6) var(--space-7);
+  }
+  .mys__days {
+    font-size: var(--text-small);
+    font-weight: 700;
+    color: var(--ink-strong);
+  }
+  .mys__name {
+    font-family: var(--font-read);
+    font-weight: 500;
+    font-size: var(--text-h4);
+    color: var(--ink-strong);
+    margin: var(--space-2) 0 var(--space-4);
+  }
+  .mys__list {
+    margin: 0;
+    padding-left: 1.2rem;
+    color: var(--ink);
+    font-size: var(--text-small);
+  }
+  .mys__list li {
+    margin-bottom: var(--space-1);
+  }
+
+  /* The litany is long; it reads as one tall sheet laid on the page. */
+  .litany {
+    max-width: 64rem;
+    margin: var(--space-9) auto var(--space-10);
+    padding: clamp(2.5rem, 6vw, 4.5rem) clamp(1.5rem, 5vw, 4rem);
+  }
+  @media (max-width: 68rem) {
+    .litany {
+      margin-inline: var(--gutter);
+    }
+  }
+  .litany__label {
+    display: block;
+  }
+  .litany__note {
+    font-family: var(--font-read);
+    font-style: italic;
+    color: var(--muted);
+    margin-bottom: var(--space-6);
+  }
+
+  @media (max-width: 40rem) {
+    .mys {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
