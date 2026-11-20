@@ -118,10 +118,25 @@
     --beard: #573626;
     --lip: #eba48e;
     --mantle-shade: #d4553f;
+    /* His own colours, not the theme's: at night the theme turns light
+       surfaces dark and ink light, which gave him hollow eyes (dark whites,
+       pale pupils), bruised cheeks and a dark robe. He stays himself; only
+       the robe dims a little, as if by moonlight. */
+    --f-white: #fbfdfc;
+    --f-pupil: #0f2a2e;
+    --f-cheek: #f3b9a9;
+    --f-robe: #fbfdfc;
+    --f-robe-shade: #e4eeed;
     --cut: rgba(2, 22, 24, 0.42);
     position: relative;
     display: flex;
     justify-content: center;
+  }
+
+  :global(html[data-theme='night']) .friend {
+    --f-robe: #e3e6ef;
+    --f-robe-shade: #c3c9d9;
+    --cut: rgba(0, 0, 0, 0.5);
   }
 
   .friend__art {
@@ -178,14 +193,14 @@
     stroke-linecap: round;
   }
   .f-sleeve {
-    fill: var(--raised);
+    fill: var(--f-robe-shade);
   }
   .f-robe__body {
-    fill: var(--sheet);
+    fill: var(--f-robe);
   }
   .f-robe__line {
     fill: none;
-    stroke: var(--raised);
+    stroke: var(--f-robe-shade);
     stroke-width: 3;
     stroke-linecap: round;
   }
@@ -199,7 +214,7 @@
     stroke-linecap: round;
   }
   .f-cheek {
-    fill: var(--peach);
+    fill: var(--f-cheek);
     opacity: 0.7;
   }
   .f-beard {
@@ -215,13 +230,13 @@
     filter: none;
   }
   .f-white {
-    fill: var(--sheet);
+    fill: var(--f-white);
   }
   .f-pupil circle {
-    fill: var(--ink);
+    fill: var(--f-pupil);
   }
   .f-pupil .f-glint {
-    fill: var(--sheet);
+    fill: var(--f-white);
   }
   .f-brow,
   .f-happy {
@@ -231,7 +246,7 @@
     stroke-linecap: round;
   }
   .f-happy {
-    stroke: var(--ink);
+    stroke: var(--f-pupil);
     stroke-width: 3.5;
     opacity: 0;
   }
